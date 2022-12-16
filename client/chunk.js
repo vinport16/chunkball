@@ -114,7 +114,7 @@ var Chunk = function (position_, blocks_) {
     return sides;
   }
 
-  this.draw = function(scene, origin){
+  this.build = function(scene, origin){
     // origin is the position of the currently focused chunk, which is treated as 0 for graphics
 
     let self = this; // needed to refer to 'this' inside forEach
@@ -158,6 +158,25 @@ var Chunk = function (position_, blocks_) {
     var mesh = new THREE.Mesh(allBoxes, mat);
     graphicsObject = mesh;
     scene.add(mesh);
+  }
+
+  this.draw = function(scene, origin){
+    if(graphicsObject == null){
+      this.build(scene, origin);
+    }
+    if(blockUpdate.length > 0){
+      // do update
+      // this.build(scene, origin);
+    }
+  }
+
+  this.hide = function(scene){
+    scene.remove(graphicsObject);
+  }
+
+  this.unbuild = function(scene){
+    this.hide(scene);
+    graphicsObject = null;
   }
 
   this.size = function(){

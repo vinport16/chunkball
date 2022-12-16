@@ -3,8 +3,10 @@ import { Chunk } from './chunk.js';
 var World = function () {
 
   var chunkSize = new THREE.Vector3(10, 10, 10);
-  var chunkRadius = 2;
+  // how many chunks in each direction should be visible?
   var renderRadius = 2.5;
+  // how far do you have to move from the focused chunk to change focus?
+  var chunkRadius = 2;
 
   var focusedChunk;
 

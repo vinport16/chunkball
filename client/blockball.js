@@ -18,7 +18,6 @@ var prevTime = performance.now();
 var velocity = new THREE.Vector3();
 var terminalVelocityY = -25;
 var direction = new THREE.Vector3();
-var vertex = new THREE.Vector3();
 var color = new THREE.Color();
 var sprint = false;
 var startTime = Date.now();
@@ -32,8 +31,6 @@ init();
 animate();
 
 function init() {
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
-  camera.position.y = 10;
   scene = new THREE.Scene();
   //scene.background = new THREE.Color( 0x44ff00 );
   scene.background = new THREE.MeshLambertMaterial({
@@ -44,6 +41,8 @@ function init() {
   light.position.set(0.5, 1, 0.75);
   scene.add(light);
 
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
+  camera.position.y = 10;
   add_crosshair(camera);
 
   controls = new PointerLockControls(camera);
