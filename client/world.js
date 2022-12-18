@@ -1,4 +1,5 @@
 import { Chunk } from './chunk.js';
+import { EmptyChunk } from './emptyChunk.js';
 
 var World = function () {
 
@@ -8,7 +9,7 @@ var World = function () {
   // how far do you have to move from the focused chunk to change focus?
   var chunkRadius = 2;
 
-  var focusedChunk;
+  var focusedChunk = null;
 
   var chunkMap = {};
 
@@ -34,7 +35,7 @@ var World = function () {
 
   this.blockAt = function(p){
     let chunk = pos2chunk(p);
-    if(chunk == null){
+    if(!chunk){
       return false;
     }
     return chunk.blockAt(p.sub(chunk.getPosition()));
@@ -61,7 +62,14 @@ var World = function () {
     return neighbors;
   }
 
+  var visibleChunkCacheCenter = null;
+  var visibleChunkCache = [];
+
   this.visibleChunks = function(){
+    if(visibleChunkCacheCenter === focusedChunk){
+      return visibleChunkCache;
+    }
+
     let center = focusedChunk.getPosition().divide(chunkSize).floor();
     let p = center.clone();
     let x = p.x;
@@ -80,14 +88,44 @@ var World = function () {
         }
       }
     }
-    return visible.filter(x => x != null);
 
+    visibleChunkCache = visible.filter(x => x != null);
+    return visibleChunkCache;
   }
 
-  this.draw = function(scene){
-    this.visibleChunks().forEach( function(chunk){
-      chunk.draw(scene, focusedChunk.getPosition());
+  this.createEmptyChunkAt = function(position){
+    let chunk = new EmptyChunk(position.clone().divide(chunkSize).floor().multiply(chunkSize), chunkSize.clone());
+    this.setChunk(chunk);
+    return chunk;
+  }
+
+  this.calculateFocusedChunk = function(player){
+    let p = player.getPosition();
+    let playerChunk = pos2chunk(p) || this.createEmptyChunkAt(p);
+
+    if( playerChunk === focusedChunk ) return;
+    if(focusedChunk.distanceTo(p) > chunkRadius){
+      focusedChunk = playerChunk;
+    }
+  }
+
+  this.updateVisibleChunks = function(scene){
+    let previouslyVisible = [...visibleChunkCache]; // clone
+    let visible = this.visibleChunks()
+    let difference = previouslyVisible.filter(x => !visible.includes(x));
+    
+    difference.forEach( function(chunk){
+      chunk.unbuild(scene);
     });
+    visible.forEach( function(chunk){
+      chunk.draw(scene);
+    });
+  }
+
+  this.draw = function(scene, player){
+    if(!focusedChunk) return;
+    this.calculateFocusedChunk(player);
+    this.updateVisibleChunks(scene);
   }
 
   this.print = function(){

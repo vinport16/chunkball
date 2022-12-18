@@ -114,7 +114,7 @@ var Chunk = function (position_, blocks_) {
     return sides;
   }
 
-  this.build = function(scene, origin){
+  this.build = function(scene){
     // origin is the position of the currently focused chunk, which is treated as 0 for graphics
 
     let self = this; // needed to refer to 'this' inside forEach
@@ -151,7 +151,7 @@ var Chunk = function (position_, blocks_) {
     });
 
     // reposition in world coordinates
-    let offset = this.getPosition().sub(origin)
+    let offset = this.getPosition();
     allBoxes.translate(offset.x, offset.y, offset.z);
 
     let mat = new THREE.MeshLambertMaterial({ vertexColors: THREE.FaceColors });
@@ -160,9 +160,9 @@ var Chunk = function (position_, blocks_) {
     scene.add(mesh);
   }
 
-  this.draw = function(scene, origin){
+  this.draw = function(scene){
     if(graphicsObject == null){
-      this.build(scene, origin);
+      this.build(scene);
     }
     if(blockUpdate.length > 0){
       // do update
@@ -183,9 +183,22 @@ var Chunk = function (position_, blocks_) {
     return new THREE.Vector3(blocks.length, blocks[0].length, blocks[0][0].length);
   }
 
+  this.distanceTo = function(p){
+    let above = this.size().sub(p); // if positive, outside
+    let below = p.clone().sub(this.getPosition()).sub(this.size()); // if positive, outside
+    let distances = above.max(below).toArray(); // take maximum values in each direction
+    let dsquared = distances.map(function(num){
+      if(num < 0){
+        return 0; // remove neagtive values
+      }
+      return num * num; // square positive values
+    });
+    let sum = dsquared.reduce(function (x, y) {return x + y;}, 0);
+    return Math.sqrt(sum);
+  }
+
 };
 
 Chunk.prototype.constructor = Chunk;
-
 
 export { Chunk };

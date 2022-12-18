@@ -1,27 +1,140 @@
-import {
-  PointerLockControls
-} from './pointerlock.js';
-import {
-  World
-} from './world.js';
-import {
-  Chunk
-} from './chunk.js';
+import {PointerLockControls} from './pointerlock.js';
+import {World} from './world.js';
+import {Chunk} from './chunk.js';
+import {Player} from './player.js';
 var camera, scene, renderer, controls;
+
 var world = new World();
-var moveForward = false;
-var moveBackward = false;
-var moveLeft = false;
-var moveRight = false;
-var canJump = false;
-var prevTime = performance.now();
-var velocity = new THREE.Vector3();
-var terminalVelocityY = -25;
-var direction = new THREE.Vector3();
-var color = new THREE.Color();
-var sprint = false;
+var player = new Player(new THREE.Vector3(4,25,4), world);
+
+
+let blocks = [
+  [
+    [1, 1, 0, 0, 0, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  ],
+  [
+    [1, 1, 0, 0, 0, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  ]
+];
+
+for (let i = 0; i < 8; i++) {
+  blocks.push([
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  ]);
+}
+
+let flatchunk = [];
+for (let i = 0; i < 10; i++) {
+  flatchunk.push([
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  ]);
+}
+
+function tentchunk(){
+  let tc = [];
+  for (let i = 0; i < 10; i++) {
+    tc.push([
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
+      [0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
+      [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+      [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+      [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+      [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    ]);
+  }
+  return tc;
+}
+
+let c = new Chunk(new THREE.Vector3(0, 0, 0), blocks);
+world.setChunk(c);
+
+for (let x = -5; x <= 5; x++) {
+  for (let z = -5; z <= 5; z++) {
+    let c = new Chunk(new THREE.Vector3(x * 10, -10, z * 10), flatchunk);
+    world.setChunk(c);
+  }
+}
+
+c = new Chunk(new THREE.Vector3(-10, 0, 0), tentchunk());
+world.setChunk(c);
+c = new Chunk(new THREE.Vector3(-10, 0, -10), tentchunk());
+world.setChunk(c);
+
+c = new Chunk(new THREE.Vector3(10, 0, 0), blocks);
+world.setChunk(c);
+c = new Chunk(new THREE.Vector3(10, 0, 10), blocks);
+world.setChunk(c);
+
+c = new Chunk(new THREE.Vector3(10, 10, 10), blocks);
+world.setChunk(c);
+
+c = new Chunk(new THREE.Vector3(20, 10, 10), blocks);
+world.setChunk(c);
+
+c = new Chunk(new THREE.Vector3(30, 10, 10), blocks);
+world.setChunk(c);
+
+c = new Chunk(new THREE.Vector3(40, 10, 10), blocks);
+world.setChunk(c);
+
+c = new Chunk(new THREE.Vector3(30, 10, 10), blocks);
+world.setChunk(c);
+
+
+
+
+// var moveForward = false;
+// var moveBackward = false;
+// var moveLeft = false;
+// var moveRight = false;
+// var canJump = false;
+// var velocity = new THREE.Vector3();
+// var terminalVelocityY = -25;
+// var direction = new THREE.Vector3();
+// var color = new THREE.Color();
+// var sprint = false;
 var startTime = Date.now();
-var playerJustFell = false;
+// var playerJustFell = false;
 var loadStatus = 1;
 var playerClass = "scout";
 var reloadTime = 100;
@@ -29,6 +142,7 @@ var playerSnowballCount = 1000;
 
 init();
 animate();
+
 
 function init() {
   scene = new THREE.Scene();
@@ -45,118 +159,101 @@ function init() {
   camera.position.y = 10;
   add_crosshair(camera);
 
-  controls = new PointerLockControls(camera);
+  player.init(scene, camera)
+
   var blocker = document.getElementById('blocker');
   var instructions = document.getElementById('instructions');
   var leaderboard = document.getElementById('leaderboard');
   var startButton = document.getElementById('startButton');
 
-  startButton.addEventListener('click', function() {
-    var username = document.getElementById('userName').value;
-    //socket.emit("setUser", {name:username});
-    controls.lock();
-  }, false);
-  controls.addEventListener('lock', function() {
+  function setPlayUI(){
     instructions.style.display = 'none';
     leaderboard.style.display = '';
     blocker.style.display = 'none';
-  });
-  controls.addEventListener('unlock', function() {
+  }
+
+  function setPauseUI(){
     blocker.style.display = 'block';
     instructions.style.display = '';
     leaderboard.style.display = '';
-  });
-  controls.getObject().position.x = 2;
-  controls.getObject().position.y = 90;
-  controls.getObject().position.z = 2;
+  }
+
+  startButton.addEventListener('click', function() {
+    var username = document.getElementById('userName').value;
+    //socket.emit("setUser", {name:username});
+    player.play();
+    setPlayUI();
+  }, false);
+
   //socket.emit("respawn");
-  scene.add(controls.getObject());
+
   var onClick = function(event) {
-    if (loadStatus > 0.999 && controls.isLocked && playerSnowballCount > 0) {
-      var vector = new THREE.Vector3(0, 0, -1);
-      vector.applyQuaternion(camera.quaternion);
-
-      //socket.emit("launch", {dx:vector.x, dy:vector.y, dz:vector.z});
-      loadStatus = 0;
-
-      playerSnowballCount--;
-      document.getElementById('snowballCount').innerHTML = playerSnowballCount;
-    }
+    player.shoot();
   }
   var onKeyDown = function(event) {
     switch (event.keyCode) {
+      case 27: // escape
+        setPauseUI();
+        break;
       case 16: // shift
-        camera.fov = 10;
-        controls.speedFactor = 0.0004;
-        camera.updateProjectionMatrix();
+        player.zoom();
         break;
       case 38: // up
       case 87: // w
         var elapsedTime = ((Date.now() - startTime) / 1000).toFixed(3);
         if (elapsedTime < 0.5) {
-          sprint = true;
+          player.sprint = true;
         }
-        moveForward = true;
+        player.moveForward = true;
         break;
       case 37: // left
       case 65: // a
-        moveLeft = true;
+        player.moveLeft = true;
         break;
       case 40: // down
       case 83: // s
-        moveBackward = true;
+        player.moveBackward = true;
         break;
       case 39: // right
       case 68: // d
-        moveRight = true;
+        player.moveRight = true;
         break;
       case 32: // space
-        if (canJump === true) velocity.y += 9;
-        canJump = false;
+        player.jump();
         break;
       case 69: // e
         // shoot
-        if (!playerJustFell) {
-          onClick(event);
-        }
+        player.shoot();
         break;
       case 88: //x, change class
-        if (playerClass == "scout") {
-          //socket.emit("change class", "sniper");
-        } else if (playerClass == "sniper") {
-          //socket.emit("change class", "heavy");
-        } else if (playerClass == "heavy") {
-          //socket.emit("change class", "scout");
-        }
+        player.changeClass();
         break;
       case 77: //m, change mode
-
+        // ? what mode ?
         break;
     }
   };
   var onKeyUp = function(event) {
     switch (event.keyCode) {
       case 16: // shift
-        camera.fov = 75;
-        controls.speedFactor = 0.002;
-        camera.updateProjectionMatrix();
+        player.unzoom();
       case 38: // up
       case 87: // w
         startTime = Date.now();
-        sprint = false;
-        moveForward = false;
+        player.sprint = false;
+        player.moveForward = false;
         break;
       case 37: // left
       case 65: // a
-        moveLeft = false;
+        player.moveLeft = false;
         break;
       case 40: // down
       case 83: // s
-        moveBackward = false;
+        player.moveBackward = false;
         break;
       case 39: // right
       case 68: // d
-        moveRight = false;
+        player.moveRight = false;
         break;
     }
   };
@@ -229,341 +326,31 @@ function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-function isColliding(position) {
-  var checkspots = [];
-  var mapPos = position.clone().sub(new THREE.Vector3(0, 1.5, 0));
-
-  // other x or other z: false if standing only on one tile
-  let ox = false;
-  let oz = false;
-
-  let radius = (0.375);
-
-  if (mapPos.x % 1 > 1 - radius) {
-    ox = mapPos.x + 1;
-  } else if (mapPos.x % 1 < radius) {
-    ox = mapPos.x - 1;
-  }
-
-  if (mapPos.z % 1 > 1 - radius) {
-    oz = mapPos.z + 1;
-  } else if (mapPos.z % 1 < radius) {
-    oz = mapPos.z - 1;
-  }
-
-  checkspots.push(mapPos.clone());
-  if (ox) {
-    checkspots.push(mapPos.clone().setX(ox));
-  }
-  if (oz) {
-    checkspots.push(mapPos.clone().setZ(oz));
-  }
-  if (ox && oz) {
-    checkspots.push(mapPos.clone().setX(ox).setZ(oz));
-  }
-
-  let above = [];
-  checkspots.forEach(function(spot) {
-    above.push(spot.clone().add(new THREE.Vector3(0, 0.75, 0))); // middle of player
-    above.push(spot.clone().add(new THREE.Vector3(0, 1.50, 0))); // top of player
-  });
-
-  checkspots = checkspots.concat(above);
-
-  for (var i in checkspots) {
-    if (world.blockAt(checkspots[i])) {
-      return true;
-    }
-  }
-  return false;
-}
-
-var lastlogged = null;
-
-function nextPosition(position, move) {
-
-  // if horizontal movement is small, allow only vertical movement
-  //if(Math.abs(move.x) + Math.abs(move.z) < 0.001){
-  //    let next = position.clone();
-  //    next.y += move.y;
-  //    return next;
-  //}
-
-  // slightlyHigher can also be slightly lower, depending on vertical direction
-  let slightlyHigher = position.clone();
-  slightlyHigher.y += Math.sign(move.y) / 0.5;
-
-  // if you are moving up or down, and you will be colliding with a block, allow
-  // vertical movement only
-  //if(isColliding(position) || isColliding(slightlyHigher)){
-  //    let next = position.clone();
-  //    next.y += move.y;
-  //    return next;
-  //}
-
-  // calculate step size: we want about 5 steps
-  let stepsize = move.length() / (1 + Math.floor(move.length() / 0.5));
-  stepsize = stepsize - 0.0005;
-  if (stepsize < 0.0005) {
-    stepsize = 0.0005;
-  }
-
-  let fauxPosition = position.clone();
-  for (let step = stepsize; step < move.length(); step += stepsize) {
-    fauxPosition.add(move.clone().normalize().multiplyScalar(stepsize));
-
-    // if there is a collision during one of the 5 steps
-    var collision = isColliding(fauxPosition);
-    if (collision) {
-      let tinystep = stepsize;
-      let direction = -1;
-      // halve the distance 7 times until you find a position that is not colliding
-      for (let i = 0; i < 7; i++) {
-        tinystep = tinystep / 2;
-        fauxPosition.add(move.clone().normalize().multiplyScalar(tinystep * direction));
-        if (isColliding(fauxPosition)) {
-          direction = -1;
-        } else {
-          direction = 1;
-        }
-      }
-      if (isColliding(fauxPosition)) {
-        fauxPosition.add(move.clone().normalize().multiplyScalar(tinystep * direction));
-      }
-      break;
-    }
-  }
-
-  if (collision) {
-    // determine if you can go more in the x or y or z direction
-
-    let xtester = fauxPosition.clone();
-    xtester.x += Math.sign(move.x) / 10;
-    let ytester = fauxPosition.clone();
-    ytester.y += Math.sign(move.y) / 10;
-    let ztester = fauxPosition.clone();
-    ztester.z += Math.sign(move.z) / 10;
-
-    let newMove = move.clone().sub(
-      fauxPosition.clone().sub(position)
-    );
-
-    if (isColliding(xtester)) {
-      newMove.x = 0;
-    }
-    if (isColliding(ytester)) {
-      newMove.y = 0;
-    }
-    if (isColliding(ztester)) {
-      newMove.z = 0;
-    }
-    return nextPosition(fauxPosition.clone(), newMove);
-
-  }
-  return fauxPosition;
-
-}
-
 function animate() {
   requestAnimationFrame(animate);
-  if (controls.getObject().position.y <= 2) {
-    if (!playerJustFell) {
-      playerJustFell = true;
-      velocity.y = 0;
-      // controls.getObject().position.y = 1000;
-      // controls.getObject().position.z = -500;
-      //socket.emit("playerFell")
-    }
-  }
-
-  if (controls.isLocked === true) {
-
-    var originalPosition = new THREE.Vector3();
-    originalPosition.x = controls.getObject().position.x;
-    originalPosition.y = controls.getObject().position.y;
-    originalPosition.z = controls.getObject().position.z;
-
-
-    let slightlyLower = controls.getObject().position.clone();
-    slightlyLower.y -= 0.01;
-    var onObject = isColliding(slightlyLower);
-
-    var time = performance.now();
-    var delta = (time - prevTime) / 1000;
-    velocity.x -= velocity.x * 4.0 * delta;
-    velocity.z -= velocity.z * 4.0 * delta;
-    velocity.y -= 9.8 * 2.0 * delta; // 100.0 = mass
-    if (velocity.y < terminalVelocityY) {
-      velocity.y = terminalVelocityY;
-    }
-    direction.z = Number(moveForward) - Number(moveBackward);
-    direction.x = Number(moveRight) - Number(moveLeft);
-    direction.normalize(); // this ensures consistent movements in all directions
-    if (sprint && (moveForward || moveBackward)) {
-      velocity.z -= direction.z * 30.0 * delta;
-    } else if (moveForward || moveBackward) {
-      velocity.z -= direction.z * 17.5 * delta;
-    }
-    if (moveLeft || moveRight) velocity.x -= direction.x * 17.5 * delta;
-    if (onObject === true) {
-      velocity.y = Math.max(0, velocity.y);
-      canJump = true;
-    }
-    controls.moveRight(-velocity.x * delta);
-    controls.moveForward(-velocity.z * delta);
-    controls.getObject().position.y += (velocity.y * delta); // new behavior
-
-    let newPosition = controls.getObject().position;
-    let move = newPosition.sub(originalPosition);
-
-    let newPos = nextPosition(originalPosition, move);
-    controls.getObject().position.x = newPos.x;
-    controls.getObject().position.y = newPos.y;
-    controls.getObject().position.z = newPos.z;
-
-    if (isColliding(originalPosition)) {
-      controls.getObject().position.x = originalPosition.x;
-      controls.getObject().position.y = originalPosition.y; // THIS STOPS JUMPING THROUGH CEILINGS
-      controls.getObject().position.z = originalPosition.z;
-    }
-
-    // what was the actual delta in position? this is the actual velocity
-    velocity.y = (newPos.y - originalPosition.y) / delta;
-
-    // update reload status and bar
-    loadStatus += (time - prevTime) / reloadTime;
-    loadStatus = Math.min(loadStatus, 1);
-    document.getElementById('status-bar').style.width = (loadStatus * 100) + "%";
-
-    // if ( controls.getObject().position.y < 10 ) {
-    //     velocity.y = 0;
-    //     respawn();
-    //     canJump = true;
-    // }
-    prevTime = time;
-
-  } else {
-    velocity.set(0, 0, 0);
-    sprint = false;
-    moveForward = false;
-    moveBackward = false;
-    moveLeft = false;
-    moveRight = false;
-  }
+  player.animate();
+  world.draw(scene, player);
   renderer.render(scene, camera);
 }
 
 
-let blocks = [
-  [
-    [1, 1, 0, 0, 0, 1, 0, 0, 1, 1],
-    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  ],
-  [
-    [1, 1, 0, 0, 0, 1, 0, 0, 1, 1],
-    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  ]
-];
 
-for (let i = 0; i < 8; i++) {
-  blocks.push([
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  ]);
-}
 
-let flatchunk = [];
-for (let i = 0; i < 10; i++) {
-  flatchunk.push([
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  ]);
-}
 
-let tentchunk = [];
-for (let i = 0; i < 10; i++) {
-  tentchunk.push([
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
-    [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  ]);
-}
 
-let c = new Chunk(new THREE.Vector3(0, 0, 0), blocks);
-world.setChunk(c);
 
-for (let x = -5; x <= 5; x++) {
-  for (let z = -5; z <= 5; z++) {
-    let c = new Chunk(new THREE.Vector3(x * 10, -10, z * 10), flatchunk);
-    world.setChunk(c);
-  }
-}
 
-c = new Chunk(new THREE.Vector3(-10, 0, 0), tentchunk);
-world.setChunk(c);
-c = new Chunk(new THREE.Vector3(-10, 0, -10), tentchunk);
-world.setChunk(c);
 
-c = new Chunk(new THREE.Vector3(10, 0, 0), blocks);
-world.setChunk(c);
-c = new Chunk(new THREE.Vector3(10, 0, 10), blocks);
-world.setChunk(c);
 
-c = new Chunk(new THREE.Vector3(10, 10, 10), blocks);
-world.setChunk(c);
 
-c = new Chunk(new THREE.Vector3(20, 10, 10), blocks);
-world.setChunk(c);
 
-c = new Chunk(new THREE.Vector3(30, 10, 10), blocks);
-world.setChunk(c);
 
-c = new Chunk(new THREE.Vector3(40, 10, 10), blocks);
-world.setChunk(c);
 
-c = new Chunk(new THREE.Vector3(30, 10, 10), blocks);
-world.setChunk(c);
 
-world.draw(scene);
+
+
+
+
 
 var players = {};
 var projectiles = {};
