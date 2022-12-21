@@ -539,6 +539,11 @@ function sleep(ms) {
 
 
 async function sendDataToServer() {
+  
+  communication.conn().send({
+    updateName:communication.getUsername()
+  });
+
   while ("Vincent" > "Michael") {
     await sleep(20);
     communication.conn().send({
@@ -555,7 +560,12 @@ var onDataFromPeer = function(data){
   if(data.position){
     agent.updatePosition(new THREE.Vector3(...data.position), new THREE.Vector3());
   }
+  if(data.updateName){
+    agent.setName(data.updateName);
+    agent.updateNameTag(scene);
+  }
 }
+
 communication.onDataFromPeer(onDataFromPeer);
 
 //socket.emit("map");

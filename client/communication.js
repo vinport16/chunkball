@@ -29,11 +29,13 @@ var Communication = function () {
     peer.on('connection', function(c){
       conn = c;
       console.log("someone joined my test peer 'px'");
-      onConnFunc();
-      console.log("sending data now");
-      c.on('data', function(data){
-        onDataFunc(data);
-      });
+      c.on("open", function(){
+        console.log("sending data now");
+        onConnFunc();
+        c.on('data', function(data){
+          onDataFunc(data);
+        });
+      })
     });
   }else if(params.joining){
     console.log("joining server", params.joining);
@@ -77,6 +79,10 @@ var Communication = function () {
 
   this.conn = function(){
     return conn;
+  }
+
+  this.getUsername = function(){
+    return params['username'];
   }
 
 

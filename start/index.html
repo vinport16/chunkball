@@ -12,8 +12,39 @@
 
   <body>
     <h1>chunkball</h1>
-    <a href="../client/index.html?serving=yes2345">host a game</a><br>
-    <a href="../client/index.html?joining=yes2345">join a game</a>
+    Username: <input type="text" id="playername"/><br>
+    Game ID: <input type="text" id="gamecode"/><br>
+    <hr>
+    <a href="../client/index.html" id="hostlink">host a game</a><br>
+    <a href="../client/index.html" id="joinlink">join a game</a><br>
     hello :) :)
   </body>
+
+  <script type="text/javascript">
+
+    var servingURL = new URL(document.getElementById("hostlink").href);
+    var joiningURL = new URL(document.getElementById("joinlink").href);
+
+    var nameinput = document.getElementById('playername');
+    function setUserName(){
+      servingURL.searchParams.set('username', nameinput.value);
+      joiningURL.searchParams.set('username', nameinput.value);
+      document.getElementById("hostlink").href = servingURL;
+      document.getElementById("joinlink").href = joiningURL;
+    };
+    nameinput.onchange = setUserName;
+
+    var gameidinput = document.getElementById('gamecode');    
+    function setGameID(){
+      servingURL.searchParams.set('serving', gameidinput.value);
+      joiningURL.searchParams.set('joining', gameidinput.value);
+      document.getElementById("hostlink").href = servingURL;
+      document.getElementById("joinlink").href = joiningURL;
+    };
+    gameidinput.onchange = setGameID;
+
+    setGameID();
+    setUserName();
+    
+  </script>
 </html>
