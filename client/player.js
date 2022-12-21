@@ -88,7 +88,7 @@ var Player = function (position_, world_) {
   }
 
   this.getPosition = function(){
-    return controls.getObject().position.clone();
+    return controls.getObject().position.clone();//.setY(controls.getObject().position.y - 0.75);
   }
 
   this.isPositionColliding = function(position){

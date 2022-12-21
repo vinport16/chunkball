@@ -22,10 +22,13 @@ if(params.serving){
 
   // when people connect, add them to game
   peer.on('connection', function(c){
+    conn = c;
     console.log("someone joined my test peer 'px'");
-    c.send("hello");
+    sendDataToServer();
+    console.log("sending data now");
     c.on('data', function(data){
       console.info("px message recieved:", data);
+      onDataFromPeer(data);
     });
   });
 }else if(params.joining){
@@ -44,14 +47,15 @@ if(params.serving){
     });
     conn.on('open', function(){
       console.log("cx open");
-      conn.send('data', 1234);
-      console.log("sent 1234");
+      sendDataToServer();
+      console.log("sending data now");
     });
     conn.on('close', function(){
       console.log("closed.....");
     });
     conn.on('data', function(data){
       console.log("recieved data:", data);
+      onDataFromPeer(data);
     });
   });
   
@@ -59,3 +63,4 @@ if(params.serving){
   alert("u didn't start a server or join a server so...... ur crinje");
   // TODO start server with no network connection
 }
+
