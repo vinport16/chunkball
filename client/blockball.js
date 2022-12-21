@@ -2,10 +2,15 @@ import {PointerLockControls} from './pointerlock.js';
 import {World} from './world.js';
 import {Chunk} from './chunk.js';
 import {Player} from './player.js';
+import {Agent} from './agent.js';
+import {Communication} from './communication.js';
 var camera, scene, renderer, controls;
 
+var communication = new Communication();
+communication.onConnect(sendDataToServer);
 var world = new World();
 var player = new Player(new THREE.Vector3(4,25,4), world);
+var agent;
 
 
 let blocks = [
@@ -121,8 +126,6 @@ c = new Chunk(new THREE.Vector3(30, 10, 10), blocks);
 world.setChunk(c);
 
 
-
-
 // var moveForward = false;
 // var moveBackward = false;
 // var moveLeft = false;
@@ -154,6 +157,11 @@ function init() {
   var light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
   light.position.set(0.5, 1, 0.75);
   scene.add(light);
+
+  let a = new Agent();
+  a.setName("test player");
+  a.draw(scene);
+  a.updatePosition(new THREE.Vector3(10.5,3.5,1.5), new THREE.Vector3());
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
   camera.position.y = 10;
@@ -224,6 +232,7 @@ function init() {
       case 69: // e
         // shoot
         player.shoot();
+        console.log(player.getPosition());
         break;
       case 88: //x, change class
         player.changeClass();
@@ -355,32 +364,7 @@ function animate() {
 var players = {};
 var projectiles = {};
 
-function drawPlayer(player) {
-  var cylinderGeometry = new THREE.CylinderBufferGeometry(0.375, 0.375, 1.75, 10);
-  cylinderGeometry = cylinderGeometry.toNonIndexed(); // ensure each face has unique vertices
 
-  var material = new THREE.MeshLambertMaterial({
-    color: player.color
-  });
-
-  // to give the player a star texture, use newMaterial:
-  //const loader = new THREE.TextureLoader();
-  //let newMaterial = new THREE.MeshBasicMaterial({color: player.color, map: loader.load('/sprites/Star.png')});
-
-  var model = new THREE.Mesh(cylinderGeometry, material);
-  model.position.x = player.position.x;
-  model.position.y = player.position.y;
-  model.position.z = player.position.z;
-  model.name = "MODEL FOR: " + player.id;
-
-  player.userName = player.name;
-
-  updatePlayerNameTag(player);
-
-  player.model = model;
-  players[player.id] = player;
-  scene.add(model);
-}
 
 
 //Move this to a draw player function and call it from update player when player properties change
@@ -388,19 +372,6 @@ function drawPlayer(player) {
 //     drawPlayer(player);
 // });
 
-function updatePlayerColor(player) {
-  player.model.material.color.set(player.color);
-}
-
-function updatePlayerNameTag(player) {
-  if (player.usernameLabel) {
-    removeEntity(player.usernameLabel);
-  }
-  player.usernameLabel = makeTextSprite(player.userName);
-  player.usernameLabel.position.set(player.position.x, player.position.y + 0.75, player.position.z);
-  player.usernameLabel.name = "USERNAME FOR: " + player.id;
-  scene.add(player.usernameLabel);
-}
 
 // socket.on("updatePlayer", function(player){
 //     var p = players[player.id];
@@ -446,72 +417,6 @@ function removeEntity(object) {
   scene.remove(selectedObject);
 }
 
-function makeTextSprite(message) {
-  var canvas = document.createElement('canvas');
-  canvas.width = 256; // width and height must be powers of 2
-  canvas.height = 256;
-  var context = canvas.getContext('2d');
-  var fontsz = 32;
-  context.font = "Bold " + fontsz + "px " + "Ariel";
-
-  // get size data (height depends only on font size)
-  var metrics = context.measureText(message);
-  var textWidth = metrics.width;
-
-  // background color
-  context.fillStyle = "rgba(" + 255 + "," + 200 + "," +
-    100 + "," + 0.4 + ")";
-  // border color
-  context.strokeStyle = "rgba(" + 0 + "," + 0 + "," +
-    0 + "," + 0 + ")";
-  roundRect(context, canvas.width / 2 - textWidth / 2, 0, textWidth, fontsz * 1.4, 6);
-  // 1.4 is extra height factor for text below baseline: g,j,p,q.
-
-  // text color
-  context.fillStyle = "rgba(0, 0, 0, 1.0)";
-  context.textAlign = "center";
-  context.fillText(message, canvas.width / 2, fontsz);
-
-  // canvas contents will be used for a texture
-  var texture = new THREE.Texture(canvas)
-  texture.needsUpdate = true;
-  var spriteMaterial = new THREE.SpriteMaterial({
-    map: texture
-  });
-  var sprite = new THREE.Sprite(spriteMaterial);
-  sprite.scale.set(30, 25, 1.0);
-  sprite.center = new THREE.Vector2(0.5, 0.5);
-
-  return sprite;
-}
-
-// function for drawing rounded rectangles
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-}
-
-function updatePlayer(player) {
-  var p = players[player.id];
-  p.model.position.x = player.position.x;
-  p.model.position.y = player.position.y;
-  p.model.position.z = player.position.z;
-
-  p.usernameLabel.position.x = player.position.x;
-  p.usernameLabel.position.y = (player.position.y) + 0.75;
-  p.usernameLabel.position.z = player.position.z;
-}
 
 // socket.on("player left", function(id){
 //     scene.remove(players[id].model);
@@ -632,16 +537,25 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+
 async function sendDataToServer() {
   while ("Vincent" > "Michael") {
     await sleep(20);
-    socket.emit("player position", {
-      x: controls.getObject().position.x,
-      y: (controls.getObject().position.y - 0.75),
-      z: controls.getObject().position.z
+    communication.conn().send({
+      position: player.getPosition().toArray()
     });
   }
 }
 
+var onDataFromPeer = function(data){
+  if(!agent){
+    agent = new Agent();
+    agent.draw(scene);
+  }
+  if(data.position){
+    agent.updatePosition(new THREE.Vector3(...data.position), new THREE.Vector3());
+  }
+}
+communication.onDataFromPeer(onDataFromPeer);
+
 //socket.emit("map");
-//sendDataToServer();
