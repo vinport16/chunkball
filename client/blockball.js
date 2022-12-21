@@ -126,18 +126,6 @@ c = new Chunk(new THREE.Vector3(30, 10, 10), blocks);
 world.setChunk(c);
 
 
-var onDataFromPeer = function(data){
-  if(!agent){
-    agent = new Agent(world);
-    agent.draw(scene);
-  }
-  if(data.position){
-    agent.updatePosition(new THREE.Vector3(...data.position), new THREE.Vector3());
-  }
-}
-communication.onDataFromPeer(onDataFromPeer);
-
-
 // var moveForward = false;
 // var moveBackward = false;
 // var moveLeft = false;
@@ -170,9 +158,10 @@ function init() {
   light.position.set(0.5, 1, 0.75);
   scene.add(light);
 
-  let a = new Agent(world);
+  let a = new Agent();
+  a.setName("test player");
   a.draw(scene);
-  a.updatePosition(new THREE.Vector3(8,8,8), new THREE.Vector3());
+  a.updatePosition(new THREE.Vector3(10.5,3.5,1.5), new THREE.Vector3());
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
   camera.position.y = 10;
@@ -243,6 +232,7 @@ function init() {
       case 69: // e
         // shoot
         player.shoot();
+        console.log(player.getPosition());
         break;
       case 88: //x, change class
         player.changeClass();
@@ -556,5 +546,16 @@ async function sendDataToServer() {
     });
   }
 }
+
+var onDataFromPeer = function(data){
+  if(!agent){
+    agent = new Agent();
+    agent.draw(scene);
+  }
+  if(data.position){
+    agent.updatePosition(new THREE.Vector3(...data.position), new THREE.Vector3());
+  }
+}
+communication.onDataFromPeer(onDataFromPeer);
 
 //socket.emit("map");

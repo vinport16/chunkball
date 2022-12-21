@@ -1,8 +1,6 @@
 
-var Agent = function (world_) {
+var Agent = function () {
   
-  var world = world_;
-  var position = new THREE.Vector3();
   var direction = new THREE.Vector3();
 
   var color = new THREE.Color("red");
@@ -16,8 +14,16 @@ var Agent = function (world_) {
     playerClass = c;
   }
 
+  this.setName = function(n){
+    name = n;
+  }
+
+  this.getName = function(){
+    return name;
+  }
+
   this.getPosition = function(){
-    return position.clone();
+    return model.position.clone();
   }
 
   this.draw = function(scene){
@@ -33,9 +39,9 @@ var Agent = function (world_) {
     //let newMaterial = new THREE.MeshBasicMaterial({color: player.color, map: loader.load('/sprites/Star.png')});
 
     model = new THREE.Mesh(cylinderGeometry, material);
-    model.position.x = position.x;
-    model.position.y = position.y;
-    model.position.z = position.z;
+    model.position.x = 0;
+    model.position.y = 0;
+    model.position.z = 0;
     model.name = "MODEL FOR: " + name;
 
     this.updateNameTag(scene);
@@ -44,18 +50,20 @@ var Agent = function (world_) {
   };
 
   this.updateNameTag = function(scene) {
+    let ntp = new THREE.Vector3();
     if (nameTag) {
+      let ntp = nameTag.position.clone();
       scene.remove(nameTag);
     }
     nameTag = makeTextSprite(name);
-    nameTag.position.set(position.clone().setY(position.y + 0.75));
+    nameTag.position.set(ntp);
     nameTag.name = "NAMETAG FOR: " + name;
     scene.add(nameTag);
   }
 
   this.updatePosition = function(p, facing) {
-    model.position.set(...p.toArray());
     nameTag.position.set(...p.toArray());
+    model.position.set(...p.setY(p.y - 0.75).toArray());
   }
 
   this.updateColor = function(c) {
@@ -96,7 +104,7 @@ var Agent = function (world_) {
       map: texture
     });
     let sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(30, 25, 1.0);
+    sprite.scale.set(1.5, 1.25, 1.0);
     sprite.center = new THREE.Vector2(0.5, 0.5);
 
     return sprite;
