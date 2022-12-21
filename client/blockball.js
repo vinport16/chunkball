@@ -132,7 +132,7 @@ var onDataFromPeer = function(data){
     agent.draw(scene);
   }
   if(data.position){
-    agent.updatePosition(new THREE.Vector3(data.position), new THREE.Vector3());
+    agent.updatePosition(new THREE.Vector3(...data.position), new THREE.Vector3());
   }
 }
 communication.onDataFromPeer(onDataFromPeer);
@@ -169,6 +169,10 @@ function init() {
   var light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
   light.position.set(0.5, 1, 0.75);
   scene.add(light);
+
+  let a = new Agent(world);
+  a.draw(scene);
+  a.updatePosition(new THREE.Vector3(8,8,8), new THREE.Vector3());
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
   camera.position.y = 10;
