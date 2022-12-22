@@ -1,4 +1,11 @@
-
+/*
+An Agent controls the way other players are represented graphically in the scene.
+An agent has:
+- model (cylindrical body)
+- nameTag (text floating above model)
+- TODO: smaller cylinder pointing in the direction
+  they are looking, not sure what to call this
+*/
 var Agent = function () {
   
   var direction = new THREE.Vector3();

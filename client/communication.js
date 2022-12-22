@@ -1,4 +1,9 @@
-
+/*
+The Communication object, when initialized, starts to either set up or connect to a
+server immediately based on the present URL parameters.
+- onConnFunc will be executed when a connection is made
+- onDataFunc will be executed when data arrives from the connection (only supports one connection right now)
+*/
 var Communication = function () {
   
   const urlParams = new URLSearchParams(location.search);
