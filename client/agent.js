@@ -6,8 +6,9 @@ An agent has:
 - TODO: smaller cylinder pointing in the direction
   they are looking, not sure what to call this
 */
-var Agent = function () {
+var Agent = function (scene_) {
   
+  var scene = scene_;
   var direction = new THREE.Vector3();
 
   var color = new THREE.Color("red");
@@ -33,7 +34,7 @@ var Agent = function () {
     return model.position.clone();
   }
 
-  this.draw = function(scene){
+  this.draw = function(){
     var cylinderGeometry = new THREE.CylinderBufferGeometry(0.375, 0.375, 1.75, 10);
     cylinderGeometry = cylinderGeometry.toNonIndexed(); // ensure each face has unique vertices
 
@@ -56,7 +57,7 @@ var Agent = function () {
     scene.add(model);
   };
 
-  this.updateNameTag = function(scene) {
+  this.updateNameTag = function() {
     let ntp = new THREE.Vector3();
     if (nameTag) {
       let ntp = nameTag.position.clone();
@@ -132,6 +133,11 @@ var Agent = function () {
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
+  }
+
+  this.remove = function(){
+    scene.remove(model);
+    scene.remove(nameTag);
   }
 
 

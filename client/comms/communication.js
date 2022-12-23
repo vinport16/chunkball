@@ -1,8 +1,7 @@
 /*
 The Communication object, when initialized, starts to either set up or connect to a
 server immediately based on the present URL parameters.
-- onConnFunc will be executed when a connection is made
-- onDataFunc will be executed when data arrives from the connection (only supports one connection right now)
+- onConnFunc will be executed when a connection is made: passes connection object
 */
 var Communication = function () {
   
@@ -18,7 +17,6 @@ var Communication = function () {
   var conn;
 
   var onConnFunc;
-  var onDataFunc;
 
   if(params.serving){
     console.log("starting server", params.serving);
@@ -36,10 +34,7 @@ var Communication = function () {
       console.log("someone joined my test peer 'px'");
       c.on("open", function(){
         console.log("sending data now");
-        onConnFunc();
-        c.on('data', function(data){
-          onDataFunc(data);
-        });
+        onConnFunc(conn);
       })
     });
   }else if(params.joining){
@@ -58,14 +53,8 @@ var Communication = function () {
       });
       conn.on('open', function(){
         console.log("cx open");
-        onConnFunc();
+        onConnFunc(conn);
         console.log("sending data now");
-      });
-      conn.on('close', function(){
-        console.log("closed.....");
-      });
-      conn.on('data', function(data){
-        onDataFunc(data);
       });
     });
     
@@ -78,16 +67,20 @@ var Communication = function () {
     onConnFunc = f;
   }
 
-  this.onDataFromPeer = function(f){
-    onDataFunc = f;
-  }
-
   this.conn = function(){
     return conn;
   }
 
+  this.isServing = function(){
+    return !!params.serving;
+  }
+
+  this.isJoining = function(){
+    return !!params.joining;
+  }
+
   this.getUsername = function(){
-    return params['username'];
+    return params.username;
   }
 
 

@@ -3,14 +3,40 @@ import {World} from './world.js';
 import {Chunk} from './chunk.js';
 import {Player} from './player.js';
 import {Agent} from './agent.js';
-import {Communication} from './communication.js';
-var camera, scene, renderer, controls;
+import {Communication} from './comms/communication.js';
+import {Server} from './comms/server.js';
+import {Client} from './comms/client.js';
+import {Channel} from './comms/channel.js';
+var scene = new THREE.Scene();
+var camera, renderer, controls;
 
-var communication = new Communication();
-communication.onConnect(sendDataToServer);
+
 var world = new World();
 var player = new Player(new THREE.Vector3(4,25,4), world);
-var agent;
+
+var communication = new Communication();
+
+var client = new Client(world, scene);
+client.setName(communication.getUsername());
+
+
+if(communication.isServing()){
+  let server = new Server(world, scene);
+
+  communication.onConnect(function(conn){
+    server.addClient(conn);
+  });
+
+  let channel = new Channel().getSides();
+  client.connectServer(channel[0], player);
+  server.addClient(channel[1]);
+  client.setName(communication.getUsername());
+}else{
+  communication.onConnect(function(conn){
+    client.connectServer(conn, player);
+    console.log("sending username....", communication.getUsername());
+  });
+}
 
 
 let blocks = [
@@ -148,7 +174,6 @@ animate();
 
 
 function init() {
-  scene = new THREE.Scene();
   //scene.background = new THREE.Color( 0x44ff00 );
   scene.background = new THREE.MeshLambertMaterial({
     color: 0x663333
@@ -158,9 +183,9 @@ function init() {
   light.position.set(0.5, 1, 0.75);
   scene.add(light);
 
-  let a = new Agent();
+  let a = new Agent(scene);
   a.setName("test player");
-  a.draw(scene);
+  a.draw();
   a.updatePosition(new THREE.Vector3(10.5,3.5,1.5), new THREE.Vector3());
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
@@ -532,40 +557,5 @@ function updateProjectile(p) {
 // socket.on("restart screen", function(){
 //   controls.unlock();
 // });
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-
-async function sendDataToServer() {
-  
-  communication.conn().send({
-    updateName:communication.getUsername()
-  });
-
-  while ("Vincent" > "Michael") {
-    await sleep(20);
-    communication.conn().send({
-      position: player.getPosition().toArray()
-    });
-  }
-}
-
-var onDataFromPeer = function(data){
-  if(!agent){
-    agent = new Agent();
-    agent.draw(scene);
-  }
-  if(data.position){
-    agent.updatePosition(new THREE.Vector3(...data.position), new THREE.Vector3());
-  }
-  if(data.updateName){
-    agent.setName(data.updateName);
-    agent.updateNameTag(scene);
-  }
-}
-
-communication.onDataFromPeer(onDataFromPeer);
 
 //socket.emit("map");
