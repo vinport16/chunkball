@@ -34,7 +34,6 @@ if(communication.isServing()){
 }else{
   communication.onConnect(function(conn){
     client.connectServer(conn, player);
-    console.log("sending username....", communication.getUsername());
   });
 }
 
@@ -257,7 +256,6 @@ function init() {
       case 69: // e
         // shoot
         player.shoot();
-        console.log(player.getPosition());
         break;
       case 88: //x, change class
         player.changeClass();

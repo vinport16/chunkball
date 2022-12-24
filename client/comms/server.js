@@ -32,8 +32,6 @@ var Server = function (world_, scene_) {
   this.addClient = function(conn){
     let client = new Client(idCounter++, conn);
 
-    console.log("user id:" + client.id + " just joined");
-
     clients.push(client);
 
     this.introduceNewPlayer(client);
@@ -49,8 +47,7 @@ var Server = function (world_, scene_) {
     });
 
     conn.on("close", function(){
-      // FIREFOX DOES NOT SUPPORT ? maybe it does now let's see...
-      console.log("user " + client.name +" id:" + client.id + " just left");
+      console.log(client.name +" just left");
       announcePlayerLeft(client);
       clients.splice(clients.findIndex(c => c == client));
       client.removed = true;
@@ -68,10 +65,8 @@ var Server = function (world_, scene_) {
   }
 
   this.introduceNewPlayer = function(client){
-    console.log("introducing new player? other players: ", clients.length);
     clients.forEach(function(other){
       if(other !== client){
-        console.log("introducing", client.name, "to", other.name);
         other.conn.send({newPlayer:{id: client.id, username: client.name}});
         client.conn.send({newPlayer:{id: other.id, username: other.name}});
       }

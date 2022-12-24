@@ -30,7 +30,6 @@ var Client = function (world_, scene_) {
         agent.setName(npd.username);
         agent.updateNameTag();
         agents[npd.id] = agent;
-        console.log("client added player");
       }
       
       if(data.playerPositions){
@@ -42,10 +41,10 @@ var Client = function (world_, scene_) {
           }
         });
       }
-      if(data.updateName){
-        let update = data.updateName;
+      if(data.nameUpdate){
+        let update = data.nameUpdate;
         agents[update.id].setName(update.username);
-        agent.updateNameTag();
+        agents[update.id].updateNameTag();
       }
       if(data.playerLeft){
         agents[data.playerLeft.id].remove();
