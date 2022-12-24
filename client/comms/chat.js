@@ -1,5 +1,13 @@
 /*
-Chat controlls player chat UI
+Chat controlls player chat UI. Needs specific HTML elements present on page:
+
+<table id="chat" style="visibility: hidden;">
+  <tr><td style="visibility: hidden;">text</td></tr>
+  ... as many trs as you want visible messages ...
+  <tr><td style="visibility: hidden;">text</td></tr>
+  <tr><td style="visibility: hidden;">text</td></tr>
+  <tr><td><input id="chat-input" type="text"></input></td></tr>
+</table>
 */
 var Chat = function(conn){
   
@@ -83,11 +91,10 @@ var Chat = function(conn){
     }
   });
 
-  //usernameInput.addEventListener('keydown', function(event){event.stopPropagation();}, false);
+  usernameInput.addEventListener('keydown', function(event){event.stopPropagation();}, false);
 
   document.addEventListener('keydown', messageOnT, false);
   input.addEventListener('keydown', sendOnEnter, false);
-
 
 };
 

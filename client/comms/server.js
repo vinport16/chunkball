@@ -11,6 +11,10 @@ var Client = function (id_, conn_) {
   this.name = "username";
   this.position = new THREE.Vector3();
   this.removed = false;
+
+  this.sendAnnouncement = function(text){
+    this.conn.send({message:{from:'server', text:text}});
+  }
 };
 Client.prototype.constructor = Client;
 
@@ -43,6 +47,7 @@ var Server = function (world_, scene_) {
       if(data.updateName){
         client.name = data.updateName;
         sendNameUpdateFor(client);
+        client.sendAnnouncement("name changed to "+data.updateName);
       }
       if(data.message){
         sendMessage(client, data.message);
