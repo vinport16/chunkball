@@ -44,6 +44,9 @@ var Server = function (world_, scene_) {
         client.name = data.updateName;
         sendNameUpdateFor(client);
       }
+      if(data.message){
+        sendMessage(client, data.message);
+      }
     });
 
     conn.on("close", function(){
@@ -78,6 +81,12 @@ var Server = function (world_, scene_) {
       if(other !== client){
         other.conn.send({nameUpdate:{id: client.id, username: client.name}});
       }
+    });
+  }
+
+  function sendMessage(sender, messageText){
+    clients.forEach(function(client){
+      client.conn.send({message:{from: sender.name, text: messageText}});
     });
   }
 
