@@ -7,10 +7,11 @@ import {Communication} from './comms/communication.js';
 import {Server} from './comms/server.js';
 import {Client} from './comms/client.js';
 import {Channel} from './comms/channel.js';
+import {Chat} from './comms/chat.js'
 var scene = new THREE.Scene();
 var camera, renderer, controls;
 
-
+var chat;
 var world = new World();
 var player = new Player(new THREE.Vector3(4,25,4), world);
 
@@ -31,9 +32,11 @@ if(communication.isServing()){
   client.connectServer(channel[0], player);
   server.addClient(channel[1]);
   client.setName(communication.getUsername());
+  chat = new Chat(channel[0]);
 }else{
   communication.onConnect(function(conn){
     client.connectServer(conn, player);
+    chat = new Chat(conn);
   });
 }
 
@@ -262,6 +265,9 @@ function init() {
         break;
       case 77: //m, change mode
         // ? what mode ?
+        break;
+      case 84: //t, talk
+
         break;
     }
   };
