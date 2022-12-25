@@ -27,6 +27,10 @@ var Projectile = function (pos, vel, r) {
     position.add(velocity.clone().multiplyScalar(0.010));
   }
 
+  this.nextDelta = function(){
+    return velocity.clone().setY(velocity.y - (0.010 * GRAVITY));
+  }
+
   this.moveToHitPosition = function(world){
     let delta = velocity.clone().multiplyScalar(0.010);
     let checkp = position.clone().sub(delta); // was not hitting at last position

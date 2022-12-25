@@ -18,6 +18,26 @@ var Client = function (id_, conn_) {
   this.sendAnnouncement = function(text){
     this.conn.send({message:{from:'server', text:text}});
   }
+
+  this.hitBy = function(projectile){
+    if(this.position.clone().sub(projectile.getPosition()).length() < projectile.getRadius() + 2){
+      // they are close.. but do they touch?
+
+      // currently only detects collisions with the center of the projectile
+      // TODO: detect collisions with the edge of the projectile
+
+      let p = projectile.getPosition();
+      var dz = this.position.z - p.z;
+      var dx = this.position.x - p.x;
+      var bottom = this.position.y - (1.5/2);
+      var top = this.position.y + (1.5/2);
+
+      if( Math.sqrt(dz*dz + dx*dx) < 0.375 && p.y < top && p.y > bottom ){
+        return true;
+      }
+    }
+    return false;
+  }
 };
 Client.prototype.constructor = Client;
 
@@ -94,26 +114,9 @@ var Server = function (world_, scene_) {
   }
 
   var playersAt = function(projectile){
-    let hits = [];
-    clients.forEach(function(client){
-      if(client.position.clone().sub(projectile.getPosition()).length() < projectile.getRadius() + 2){
-        //console.log("near player...", client.position.clone().sub(projectile.getPosition().length()));
-        // they are close.. but do they touch?
-        let p = projectile.getPosition();
-
-        var dz = client.position.z - p.z;
-        var dx = client.position.x - p.x;
-        var bottom = client.position.y - (1.5/2);
-        var top = client.position.y + (1.5/2);
-
-
-        if( Math.sqrt(dz*dz + dx*dx) < 0.375 && p.y < top && p.y > bottom ){
-          console.log("hit player:",client.name);
-          hits.push(client);
-        }
-      }
+    return clients.filter(function(client){
+      client.hitBy(projectile);
     });
-    return hits;
   }
 
   var detectCollisions = function(projectile){
@@ -133,34 +136,36 @@ var Server = function (world_, scene_) {
       projectile.owner = client;
       projectiles.push(projectile);
       sendNewProjectile(projectile);
-      activateProjectile(projectile);
     });
   }
 
-  function activateProjectile(projectile){
-    let collisions = [];
-    (async () => {
-      while (collisions.length === 0 && !projectile.expired()) {
-        await sleep(10);
-        projectile.step10ms();
-        // every 10ms, check collisions
-        collisions = detectCollisions(projectile);
-      }
-      projectile.destroy();
-      if(collisions.includes(world)){
-        // set position to position of hit
-        projectile.moveToHitPosition(world);
-      }else if(collisions.length != 0){
-        // hit player
-        console.log(projectile.id, "hit player");
-        console.log("collisions",collisions);
-      }else{
-        // expired
-      }
-      projectiles = projectiles.filter(p => p != projectile);
+  function handleProjCollision(projectile, collisions){
+    if(collisions.includes(world)){
+      // set position to position of hit
+      projectile.moveToHitPosition(world);
+    }else if(collisions.length != 0){
+      // hit player
+      console.log(projectile.id, "hit player");
+      console.log("collisions",collisions);
+    }else{
+      // expired
+    }
+    projectile.destroy();
+      
+    projectiles = projectiles.filter(p => p != projectile);
 
-      announceProjHit(projectile);
-    })();
+    announceProjHit(projectile);
+  }
+
+  function moveProjectiles10ms(){
+    projectiles.forEach(function(projectile){
+      projectile.step10ms();
+      let collisions = detectCollisions(projectile);
+      if(collisions.length != 0 || projectile.expired()){
+        handleProjCollision(projectile, collisions);
+      }
+    });
+
   }
 
   function sendNewProjectile(p){
@@ -204,6 +209,10 @@ var Server = function (world_, scene_) {
     });
   }
 
+  function worldStep10ms(){
+    moveProjectiles10ms();
+  }
+
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -211,7 +220,10 @@ var Server = function (world_, scene_) {
   // on instantiation, start sending updates to clients (if any):
   (async () => {
     while ("Vincent" > "Michael") {
-      await sleep(20);
+      await sleep(10);
+      worldStep10ms();
+      await sleep(10);
+      worldStep10ms();
       this.sendUpdates();
     }
   })();
