@@ -10,6 +10,11 @@ var Projectile = function (pos, vel, r) {
   var velocity = vel; // in blocks/sec
   var radius = r;
   var destroyed = false;
+
+  var expires = 10000; // 10 sec
+  var age = 0;
+
+  this.owner;
   this.id = idcounter++;
 
   function sleep(ms) {
@@ -17,6 +22,7 @@ var Projectile = function (pos, vel, r) {
   }
 
   this.step10ms = function(){
+    age += 10;
     velocity.setY(velocity.y - (0.010 * GRAVITY));
     position.add(velocity.clone().multiplyScalar(0.010));
   }
@@ -37,6 +43,10 @@ var Projectile = function (pos, vel, r) {
       checkp.add(delta.clone().multiplyScalar(direction));
     }
     position = checkp;
+  }
+
+  this.expired = function(){
+    return age >= expires;
   }
 
   this.getPosition = function(){

@@ -64,7 +64,7 @@ var Server = function (world_, scene_) {
     conn.on("close", function(){
       console.log(client.name +" just left");
       announcePlayerLeft(client);
-      clients.splice(clients.findIndex(c => c == client));
+      clients = clients.filter(c => c != client);
       client.removed = true;
     });
   }
@@ -93,28 +93,55 @@ var Server = function (world_, scene_) {
     });
   }
 
+  var playersAt = function(projectile){
+    let hits = [];
+    clients.forEach(function(client){
+      if(client.position.clone().sub(projectile.getPosition()).length() < projectile.getRadius() + 2){
+        //console.log("near player...", client.position.clone().sub(projectile.getPosition().length()));
+        // they are close.. but do they touch?
+        let p = projectile.getPosition();
+
+        var dz = client.position.z - p.z;
+        var dx = client.position.x - p.x;
+        var bottom = client.position.y - (1.5/2);
+        var top = client.position.y + (1.5/2);
+
+
+        if( Math.sqrt(dz*dz + dx*dx) < 0.375 && p.y < top && p.y > bottom ){
+          console.log("hit player:",client.name);
+          hits.push(client);
+        }
+      }
+    });
+    return hits;
+  }
+
   var detectCollisions = function(projectile){
     let collisions = [];
     // colliding with world?
     if(world.blockAt(projectile.getPosition())){
       collisions.push(world);
     }
-    // colliding with players? TODO
+    collisions.push(...playersAt(projectile).filter(player => player != projectile.owner));
     return collisions;
   }
 
   function launch(client, angle){
-    let projectile = client.loadout.launch(client.position, angle);
-    projectiles.push(projectile);
+    let launched = client.loadout.launch(client.position, angle);
 
-    sendNewProjectile(projectile);
+    launched.forEach(function(projectile){
+      projectile.owner = client;
+      projectiles.push(projectile);
+      sendNewProjectile(projectile);
+      activateProjectile(projectile);
+    });
+  }
 
+  function activateProjectile(projectile){
     let collisions = [];
     (async () => {
-      let seconds_alive = 0;
-      while (collisions.length == 0 && seconds_alive < 10) {
+      while (collisions.length === 0 && !projectile.expired()) {
         await sleep(10);
-        seconds_alive += 0.01;
         projectile.step10ms();
         // every 10ms, check collisions
         collisions = detectCollisions(projectile);
@@ -123,7 +150,15 @@ var Server = function (world_, scene_) {
       if(collisions.includes(world)){
         // set position to position of hit
         projectile.moveToHitPosition(world);
+      }else if(collisions.length != 0){
+        // hit player
+        console.log(projectile.id, "hit player");
+        console.log("collisions",collisions);
+      }else{
+        // expired
       }
+      projectiles = projectiles.filter(p => p != projectile);
+
       announceProjHit(projectile);
     })();
   }

@@ -13,7 +13,7 @@ var Loadout = function (type_, world_) {
   this.launch = function(position, angle){
     // calc velocity
     let velocity = angle.normalize().multiplyScalar(launchSpeed);
-    return new Projectile(position, velocity, projectileRadius);
+    return [new Projectile(position, velocity, projectileRadius)];
   }
 
 };
