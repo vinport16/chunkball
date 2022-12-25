@@ -45,6 +45,10 @@ var Client = function (world_, scene_) {
         projectiles[hd.id].setPosition(new THREE.Vector3(...hd.position));
         projectiles[hd.id].destroy();
       }
+      if(data.youWereHit){
+        let hitYou = agents[data.youWereHit.by];
+        // do something with this info ?
+      }
       if(data.playerPositions){
         data.playerPositions.forEach(function(player){
           if(agents[player.id]){
@@ -63,6 +67,10 @@ var Client = function (world_, scene_) {
         let update = data.nameUpdate;
         agents[update.id].setName(update.username);
         agents[update.id].updateNameTag();
+      }
+      if(data.moveTo){
+        player.setPosition(new THREE.Vector3(...data.moveTo));
+        conn.send({doneMovingTo:player.getPosition().toArray()});
       }
       if(data.playerLeft){
         agents[data.playerLeft.id].remove();

@@ -103,6 +103,12 @@ var Player = function (position_, world_) {
     return controls.getObject().position.clone();//.setY(controls.getObject().position.y - 0.75);
   }
 
+  this.setPosition = function(p){
+    controls.getObject().position.setX(p.x);
+    controls.getObject().position.setY(p.y);
+    controls.getObject().position.setZ(p.x);
+  }
+
   this.isPositionColliding = function(position){
     var checkspots = [];
     var mapPos = position.clone().sub(new THREE.Vector3(0, 1.5, 0));

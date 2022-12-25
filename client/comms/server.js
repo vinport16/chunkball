@@ -13,6 +13,7 @@ var Client = function (id_, conn_) {
   this.name = "username";
   this.position = new THREE.Vector3();
   this.removed = false;
+  this.isTeleporting = false;
   this.loadout = new Loadout(Loadout.SCOUT);
 
   this.sendAnnouncement = function(text){
@@ -79,6 +80,10 @@ var Server = function (world_, scene_) {
       if(data.launch){
         launch(client, new THREE.Vector3(...data.launch.angle));
       }
+      if(data.doneMovingTo){
+        client.position = new THREE.Vector3(...data.doneMovingTo);
+        client.isTeleporting = false;
+      }
     });
 
     conn.on("close", function(){
@@ -115,17 +120,18 @@ var Server = function (world_, scene_) {
 
   var playersAt = function(projectile){
     return clients.filter(function(client){
-      client.hitBy(projectile);
+      return client.hitBy(projectile);
     });
   }
 
   var detectCollisions = function(projectile){
     let collisions = [];
+
     // colliding with world?
     if(world.blockAt(projectile.getPosition())){
       collisions.push(world);
     }
-    collisions.push(...playersAt(projectile).filter(player => player != projectile.owner));
+    collisions.push(...playersAt(projectile).filter(player => player != projectile.owner && !player.isTeleporting));
     return collisions;
   }
 
@@ -144,14 +150,17 @@ var Server = function (world_, scene_) {
       // set position to position of hit
       projectile.moveToHitPosition(world);
     }else if(collisions.length != 0){
-      // hit player
-      console.log(projectile.id, "hit player");
-      console.log("collisions",collisions);
+      collisions.forEach(function(collision){
+        if(collision != world){
+          // collision is a client
+          respawn(collision);
+          collision.conn.send({youWereHit:{by:projectile.owner.id}});
+        }
+      });
     }else{
       // expired
     }
     projectile.destroy();
-      
     projectiles = projectiles.filter(p => p != projectile);
 
     announceProjHit(projectile);
@@ -187,6 +196,13 @@ var Server = function (world_, scene_) {
     });
   }
 
+  function respawn(client){
+    // find a new position ?
+    let moveto = new THREE.Vector3(4,6,4);
+    client.isTeleporting = true;
+    client.conn.send({moveTo:moveto.toArray()});
+  }
+
   function sendNameUpdateFor(client){
     clients.forEach(function(other){
       if(other !== client){
@@ -204,6 +220,7 @@ var Server = function (world_, scene_) {
   function announcePlayerLeft(client){
     clients.forEach(function(other){
       if(other !== client){
+        other.sendAnnouncement(client.name + " left the game");
         other.conn.send({playerLeft:{id: client.id}});
       }
     });
