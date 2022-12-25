@@ -1,4 +1,5 @@
 import {Agent} from '../agent.js';
+import {Projectile} from '../projectile.js';
 /*
 Client manages the connection to the server peer
 */
@@ -11,8 +12,12 @@ var Client = function (world_, scene_) {
 
   var connection;
   var agents = {};
+  var projectiles = {};
+  var player;
 
-  this.connectServer = function(conn, player){
+  this.connectServer = function(conn, player_){
+    player = player_;
+
     // can't connect if already connected
     if(connection){
       console.error("you already connected to a server");
@@ -31,7 +36,15 @@ var Client = function (world_, scene_) {
         agent.updateNameTag();
         agents[npd.id] = agent;
       }
-      
+      if(data.newProjectile){
+        let npd = data.newProjectile;
+        projectiles[npd.id] = new Projectile(scene, new THREE.Vector3(...npd.position), npd.radius);
+      }
+      if(data.projectileHit){
+        let hd = data.projectileHit;
+        projectiles[hd.id].setPosition(new THREE.Vector3(...hd.position));
+        projectiles[hd.id].destroy();
+      }
       if(data.playerPositions){
         data.playerPositions.forEach(function(player){
           if(agents[player.id]){
@@ -39,6 +52,11 @@ var Client = function (world_, scene_) {
           }else{
             // this is your position
           }
+        });
+      }
+      if(data.projectilePositions){
+        data.projectilePositions.forEach(function(p){
+          projectiles[p.id].setPosition(new THREE.Vector3(...p.position));
         });
       }
       if(data.nameUpdate){
@@ -76,6 +94,14 @@ var Client = function (world_, scene_) {
 
   this.setColor = function(c){
     connection.send({updateColor:c});
+  }
+
+  this.launch = function(){
+    if(!player){return} // if player isn't created yet
+    let angle = player.launch();
+    if(angle){
+      connection.send({launch: {angle: angle.toArray()}});
+    }
   }
 
 };

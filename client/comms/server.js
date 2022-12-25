@@ -1,3 +1,5 @@
+import {Loadout} from './server/loadout.js';
+
 /*
 Server manages connections to client peers
 */
@@ -11,6 +13,7 @@ var Client = function (id_, conn_) {
   this.name = "username";
   this.position = new THREE.Vector3();
   this.removed = false;
+  this.loadout = new Loadout(Loadout.SCOUT);
 
   this.sendAnnouncement = function(text){
     this.conn.send({message:{from:'server', text:text}});
@@ -25,6 +28,7 @@ var Server = function (world_, scene_) {
   var scene = scene_;
 
   var clients = [];
+  var projectiles = [];
 
   // map of chunk -> list of clients
   // representing the clients who are currently listening for updates
@@ -52,6 +56,9 @@ var Server = function (world_, scene_) {
       if(data.message){
         sendMessage(client, data.message);
       }
+      if(data.launch){
+        launch(client, new THREE.Vector3(...data.launch.angle));
+      }
     });
 
     conn.on("close", function(){
@@ -66,9 +73,14 @@ var Server = function (world_, scene_) {
     let allPositions = clients.map(function(client){
       return {id: client.id, position: client.position.toArray()};
     });
+    let allProjectiles = projectiles.map(function(p){
+      return {id: p.id, position: p.getPosition().toArray()};
+    })
     clients.forEach(function(client){
-      // send positions of other players
-      client.conn.send({playerPositions:allPositions});
+      client.conn.send({
+        playerPositions: allPositions,
+        projectilePositions: allProjectiles,
+      });
     });
   }
 
@@ -78,6 +90,60 @@ var Server = function (world_, scene_) {
         other.conn.send({newPlayer:{id: client.id, username: client.name}});
         client.conn.send({newPlayer:{id: other.id, username: other.name}});
       }
+    });
+  }
+
+  var detectCollisions = function(projectile){
+    let collisions = [];
+    // colliding with world?
+    if(world.blockAt(projectile.getPosition())){
+      collisions.push(world);
+    }
+    // colliding with players? TODO
+    return collisions;
+  }
+
+  function launch(client, angle){
+    let projectile = client.loadout.launch(client.position, angle);
+    projectiles.push(projectile);
+
+    sendNewProjectile(projectile);
+
+    let collisions = [];
+    (async () => {
+      let seconds_alive = 0;
+      while (collisions.length == 0 && seconds_alive < 10) {
+        await sleep(10);
+        seconds_alive += 0.01;
+        projectile.step10ms();
+        // every 10ms, check collisions
+        collisions = detectCollisions(projectile);
+      }
+      projectile.destroy();
+      if(collisions.includes(world)){
+        // set position to position of hit
+        projectile.moveToHitPosition(world);
+      }
+      announceProjHit(projectile);
+    })();
+  }
+
+  function sendNewProjectile(p){
+    clients.forEach(function(client){
+      client.conn.send({newProjectile:{
+        id: p.id,
+        position: p.getPosition().toArray(),
+        radius: p.getRadius(),
+      }});
+    });
+  }
+
+  function announceProjHit(p){
+    clients.forEach(function(client){
+      client.conn.send({projectileHit:{
+        id: p.id,
+        position: p.getPosition().toArray(),
+      }});
     });
   }
 
