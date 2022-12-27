@@ -1,0 +1,112 @@
+body{
+  margin:0px;
+}
+canvas{
+  background-color: black;
+  /* margin-top: 125px; */
+}
+
+#sideBar{
+  left: 15px;
+  top: 15px;
+  width: 150px;
+  height: 95%;
+}
+
+#bottomBar{
+  left: 176px;
+  top: 85%;
+  width: 400px;
+  height: 12%;
+}
+
+div.floating{
+  color:red;
+  background-color: #000;
+  position: absolute;
+  border: 1px solid red;
+  padding: 5px;
+  overflow-x: hidden;
+}
+div.layer{
+  font-size: 22px;
+}
+
+input.size{
+  width: 3em;
+}
+
+table{
+  color: red;
+}
+
+.colorBox{
+  text-align: center;
+  vertical-align: middle;
+  color: white;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+  margin-top: 1px;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltipText {
+  visibility: hidden;
+  width: 80px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+ 
+  position: absolute;
+  z-index: 1;
+ 
+  bottom: 100%;
+  left: 50%;  
+}
+
+.tooltip .tooltipText.tooltipCenter {
+  margin-left: -40px;
+}
+
+.tooltip .tooltipText.tooltipLeft {
+  margin-left: -60px;
+}
+
+.tooltip .tooltipText.tooltipRight {
+  margin-left: -20px;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltipText {
+  visibility: visible;
+}
+
+.nonBlockObject{
+  height: 29px; 
+  width: 29px; 
+  display: inline-block; 
+  background-color: white;
+  text-align: center;
+}
+
+
+/* REMOVE ARROWS FROM NUMBER INPUT */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}

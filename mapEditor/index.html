@@ -1,0 +1,84 @@
+<html>
+
+<head>
+  <title>BlockBall Map Editor</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="sideBar" class="floating">
+    <div style="font-size: 29px">BlockBall Level Editor</div>
+    <div class="layer" id="current-layer">layer: 0/0</div>
+    <hr>
+    <input type="number" class="size" id="xsize">by<input type="number" class="size" id="ysize"><br>
+    <select id="gameType"></select>
+    <button id="new">new map</button><br>
+    <hr>
+    Navigation: <br>
+    <button id="size-big">Zoom In</button>
+    <button id="size-small">Zoom Out</button>
+    <p>Navigate with WASD. QE to move between layers. CMD-Z to undo.</p>
+    <button id="new-layer">insert layer above</button><br>
+    <button id="delete-layer">delete current layer</button><br>
+    <button id="duplicate-layer">duplicate layer</button><br>
+    <hr>
+    Add Speical Object: <br>
+    <div id="nonBlockObjectSelect">
+      <div id="F" class="nonBlockObject tooltip">F<span class="tooltipText tooltipRight">Flag</span></div>
+      <div id="S" class="nonBlockObject tooltip">S<span class="tooltipText tooltipRight">Snowball Pile</span></div>
+    </div>
+    <hr>
+    Brush:<br>
+    <select id="brush"></select>
+    <!-- <select id="color"></select> -->
+    <br>
+    <div id="colorSelect">
+      <div id="white" class="colorBox tooltip"
+        style="height: 29px; width: 29px; display: inline-block; background-color: white"><span
+          class="tooltipText tooltipRight">Eraser</span><img id="white" src="../images/32px-Eraser_icon.svg.png"></div>
+    </div>
+
+    <hr>
+    Add a new color: <br>
+    <input id="newColor" type="color" />
+    <br> Range:
+    <input id="newColorRange" type="text" />
+    The range is how textured a surface will be. Enter a value between 0.01 and 0.5. Smaller values will result in a
+    more uniform surface color.
+    <br>
+    <div id="teamSpawnSelect">
+
+    </div>
+    <br>
+    <button id="addNewColor">Add Color</button>
+
+
+  </div>
+  <div id="bottomBar" class="floating">
+    <table>
+      <!-- First column: Import 
+             Second column: Export -->
+      <tr>
+        <td>Import a map: </td>
+        <td>Export your map:</td>
+      </tr>
+      <tr>
+        <td><input type="file" id="file"></input></td>
+        <td><input type="text" id="mapName" placeholder="Map Name"></input> </td>
+      </tr>
+      <tr>
+        <td><button id="jsonImport">Import JSON</button></td>
+        <td><input type="text" id="creatorName" placeholder="Your Name"></input></td>
+      </tr>
+      <tr>
+        <td><button id="import">Import CSV</button></td>
+        <td><button id="jsonExport">jsonExport</button></td>
+      </tr>
+    </table>
+  </div>
+</body>
+<script type="text/javascript" src="util.js"></script>
+<script type="text/javascript" src="script.js"></script>
+
+</html>
