@@ -223,7 +223,7 @@ function init() {
   //socket.emit("respawn");
 
   var onClick = function(event) {
-    player.shoot();
+    client.launch();
   }
   var onKeyDown = function(event) {
     switch (event.keyCode) {
@@ -257,8 +257,7 @@ function init() {
         player.jump();
         break;
       case 69: // e
-        // shoot
-        player.shoot();
+        client.launch();
         break;
       case 88: //x, change class
         player.changeClass();
@@ -454,7 +453,7 @@ function removeEntity(object) {
 // });
 
 function createProjectile(p) {
-  var geometry = new THREE.SphereBufferGeometry(0.1, 0.25, 0.25);
+  var geometry = new THREE.SphereBufferGeometry(1, 8, 5);
   var material = new THREE.MeshLambertMaterial({
     color: 0xaaaaaa
   });

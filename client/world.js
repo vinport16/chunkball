@@ -38,7 +38,7 @@ var World = function () {
     if(!chunk){
       return false;
     }
-    return chunk.blockAt(p.sub(chunk.getPosition()));
+    return chunk.blockAt(p.clone().sub(chunk.getPosition()));
   }
 
   this.noBlockAt = function(p){
