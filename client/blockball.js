@@ -1,13 +1,14 @@
-import { PointerLockControls } from './pointerlock.js';
-import { World } from './world.js';
-import { Chunk } from './chunk.js';
-import { Player } from './player.js';
-import { Agent } from './agent.js';
-import { Communication } from './comms/communication.js';
-import { Server } from './comms/server.js';
-import { Client } from './comms/client.js';
-import { Channel } from './comms/channel.js';
-import { Chat } from './comms/chat.js';
+import {PointerLockControls} from './pointerlock.js';
+import {World} from './world.js';
+import {Chunk} from './chunk.js';
+import {Player} from './player.js';
+import {Agent} from './agent.js';
+import {Communication} from './comms/communication.js';
+import {Server} from './comms/server.js';
+import {Client} from './comms/client.js';
+import {Channel} from './comms/channel.js';
+import {Chat} from './comms/chat.js'
+import {Setup} from './setup.js'
 var scene = new THREE.Scene();
 var camera, renderer, controls;
 
@@ -17,6 +18,7 @@ var world = new World(10, 3);
 var world = chunkWorld;
 var player = new Player(new THREE.Vector3(2, 100, 3), world);
 
+var setup = new Setup();
 var communication = new Communication();
 
 var client = new Client(world, scene);
