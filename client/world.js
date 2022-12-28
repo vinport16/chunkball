@@ -1,11 +1,11 @@
 import { Chunk } from './chunk.js';
 import { EmptyChunk } from './emptyChunk.js';
 
-var World = function () {
+var World = function (chunkSize_, renderRadius_) {
 
-  var chunkSize = new THREE.Vector3(10, 10, 10);
+  var chunkSize = new THREE.Vector3(chunkSize_, chunkSize_, chunkSize_);
   // how many chunks in each direction should be visible?
-  var renderRadius = 2.5;
+  var renderRadius = renderRadius_;
   // how far do you have to move from the focused chunk to change focus?
   var chunkRadius = 2;
 
@@ -25,6 +25,21 @@ var World = function () {
 
   function pos2chunk(p) {
     return vec2chunk(p.clone().divide(chunkSize));
+  }
+
+  // map is stored in [y[z[x]]] form, chunks use [z[y[x]]]
+  // need to swap y and z
+  // xyz variables below refer to the new map
+  function flipMap(map) {
+    var newMap = [];
+    for (let z = 0; z < map[0].length; z++) {
+      newMap.push([]);
+      for (let y = 0; y < map.length; y++) {
+        newMap[z].push([])
+        newMap[z][y] = map[y][z];
+      }
+    }
+    return newMap;
   }
 
   this.setChunk = function (chunk) {
@@ -134,6 +149,46 @@ var World = function () {
     });
   }
 
+  // Read a blockball map file and create chunks based on the chunksize
+  // TODO: validate input
+  this.populateWorldFromMap = function (mapContents) {
+    var oldMap = mapContents["map"]
+    var map = flipMap(oldMap)
+
+    var mapLenZ = map.length
+    var mapLenY = map[0].length
+    var mapLenX = map[0][0].length
+
+    var chunkSizeInt = this.chunkSize.x
+
+    for (let z = 0; z < mapLenZ + chunkSizeInt; z += chunkSizeInt) {
+      for (let y = 0; y < mapLenY + chunkSizeInt; y += chunkSizeInt) {
+        for (let x = 0; x < mapLenX + chunkSizeInt; x += chunkSizeInt) {
+          var chunkBlocks = []
+          for (let cz = 0; cz < chunkSizeInt; cz++) {
+            chunkBlocks.push([])
+            for (let cy = 0; cy < chunkSizeInt; cy++) {
+              //console.log("x: " + x + " y: " + y + " z: " + z + " cz: " + cz + " cy: " + cy)
+              // Fill in zeros if out of range of map
+              if (z + cz >= mapLenZ) {
+                chunkBlocks[cz].push(Array.from({ length: chunkSizeInt }, (v, i) => 0))
+              } else if (y + cy >= mapLenY) {
+                chunkBlocks[cz].push(Array.from({ length: chunkSizeInt }, (v, i) => 0))
+              } else if (x + chunkSizeInt >= mapLenX) {
+                var mapArr = map[z + cz][y + cy].slice(x)
+                var emptyArr = Array.from({ length: chunkSizeInt - mapArr.length }, (v, i) => 0)
+                chunkBlocks[cz].push(mapArr.concat(emptyArr))
+              } else {
+                chunkBlocks[cz].push(map[z + cz][y + cy].slice(x, x + chunkSizeInt))
+              }
+            }
+          }
+          var chunk = new Chunk(new THREE.Vector3(z, y, x), chunkBlocks);
+          this.setChunk(chunk);
+        }
+      }
+    }
+  }
 };
 
 //World.prototype = Object.create( Object.prototype );
