@@ -157,18 +157,23 @@
 
         <div id="instructions">
             <span style="font-size: 50px">Welcome to BlockBall!</span>
-            <br /><br /><br />
-            <input id="userName" type="text" name="userName" value="userName">
-            <br /><br />
-            Move: WASD<br />
-            Jump: SPACE<br />
-            Look: MOUSE<br />
-            Shoot: Left Click <br />
-            Sprint: WW <br />
-            Scope: SHIFT <br />
-            Message: T <br />
-            Change Shot Type: X <br />
-            <br />
+            <br/><br/><br/>
+            <input hidden id="userName" type="text" name="userName" value="userName">
+            <br/><br/>
+            Move: WASD<br/>
+            Jump: SPACE<br/>
+            Look: MOUSE<br/>
+            Shoot: Left Click <br/>
+            Sprint: WW <br/>
+            Scope: SHIFT <br/>
+            Message: T <br/>
+            Change Shot Type: X <br/>
+            <br/>
+            <span id="mapSelect">
+                upload map: <input type="file" id="mapfile" name="file" enctype="multipart/form-data" /><br>
+                <span id="mapSelectFeedback"></span>
+            </span>
+            <br/>
             <span style="font-size:36px"><button id="startButton">Play!</button></span>
         </div>
 

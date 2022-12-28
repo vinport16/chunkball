@@ -8,6 +8,7 @@ import {Server} from './comms/server.js';
 import {Client} from './comms/client.js';
 import {Channel} from './comms/channel.js';
 import {Chat} from './comms/chat.js'
+import {Setup} from './setup.js'
 var scene = new THREE.Scene();
 var camera, renderer, controls;
 
@@ -15,6 +16,7 @@ var chat;
 var world = new World();
 var player = new Player(new THREE.Vector3(4,25,4), world);
 
+var setup = new Setup();
 var communication = new Communication();
 
 var client = new Client(world, scene);
