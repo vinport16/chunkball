@@ -110,7 +110,6 @@ function init() {
 
   //socket.emit("respawn");
 
-
   var onClick = function (event) {
     client.launch();
   }
@@ -258,6 +257,24 @@ function animate() {
   world.draw(scene, player);
   renderer.render(scene, camera);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 var players = {};
