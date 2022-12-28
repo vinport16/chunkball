@@ -1,19 +1,19 @@
-import {PointerLockControls} from './pointerlock.js';
-import {World} from './world.js';
-import {Chunk} from './chunk.js';
-import {Player} from './player.js';
-import {Agent} from './agent.js';
-import {Communication} from './comms/communication.js';
-import {Server} from './comms/server.js';
-import {Client} from './comms/client.js';
-import {Channel} from './comms/channel.js';
-import {Chat} from './comms/chat.js'
+import { PointerLockControls } from './pointerlock.js';
+import { World } from './world.js';
+import { Chunk } from './chunk.js';
+import { Player } from './player.js';
+import { Agent } from './agent.js';
+import { Communication } from './comms/communication.js';
+import { Server } from './comms/server.js';
+import { Client } from './comms/client.js';
+import { Channel } from './comms/channel.js';
+import { Chat } from './comms/chat.js';
 var scene = new THREE.Scene();
 var camera, renderer, controls;
 
 var chat;
 var world = new World();
-var player = new Player(new THREE.Vector3(4,25,4), world);
+var player = new Player(new THREE.Vector3(4, 25, 4), world);
 
 var communication = new Communication();
 
@@ -21,10 +21,10 @@ var client = new Client(world, scene);
 client.setName(communication.getUsername());
 
 
-if(communication.isServing()){
+if (communication.isServing()) {
   let server = new Server(world, scene);
 
-  communication.onConnect(function(conn){
+  communication.onConnect(function (conn) {
     server.addClient(conn);
   });
 
@@ -33,12 +33,21 @@ if(communication.isServing()){
   server.addClient(channel[1]);
   client.setName(communication.getUsername());
   chat = new Chat(channel[0]);
-}else{
-  communication.onConnect(function(conn){
+} else {
+  communication.onConnect(function (conn) {
     client.connectServer(conn, player);
     chat = new Chat(conn);
   });
 }
+
+//Test chunk conversion: 
+console.log("starting chunk test")
+var testMap = { "mapInfo": { "name": "chunkTest", "creator": "Michael", "dateMade": "2022-12-27T22:58:53.944Z", "gameType": "Free For All", "numberOfTeams": 1 }, "specialObjects": { "flags": [], "spawnAreas": [], "snowballPiles": [] }, "colors": [["white", 0], ["#059900", 0.1], ["#e60000", 0.1], ["#1957b3", 0.25]], "map": [[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], [[3, 0, 0], [3, 0, 0], [0, 0, 2], [0, 0, 2]], [[2, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 3]], [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]] }
+
+var newMap = getWorldFromMap(testMap, 2)
+
+console.log("end chunk test")
+//End chunk testing
 
 
 let blocks = [
@@ -99,7 +108,7 @@ for (let i = 0; i < 10; i++) {
   ]);
 }
 
-function tentchunk(){
+function tentchunk() {
   let tc = [];
   for (let i = 0; i < 10; i++) {
     tc.push([
@@ -188,7 +197,7 @@ function init() {
   let a = new Agent(scene);
   a.setName("test player");
   a.draw();
-  a.updatePosition(new THREE.Vector3(10.5,3.5,1.5), new THREE.Vector3());
+  a.updatePosition(new THREE.Vector3(10.5, 3.5, 1.5), new THREE.Vector3());
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
   camera.position.y = 10;
@@ -201,19 +210,19 @@ function init() {
   var leaderboard = document.getElementById('leaderboard');
   var startButton = document.getElementById('startButton');
 
-  function setPlayUI(){
+  function setPlayUI() {
     instructions.style.display = 'none';
     leaderboard.style.display = '';
     blocker.style.display = 'none';
   }
 
-  function setPauseUI(){
+  function setPauseUI() {
     blocker.style.display = 'block';
     instructions.style.display = '';
     leaderboard.style.display = '';
   }
 
-  startButton.addEventListener('click', function() {
+  startButton.addEventListener('click', function () {
     var username = document.getElementById('userName').value;
     //socket.emit("setUser", {name:username});
     player.play();
@@ -222,10 +231,10 @@ function init() {
 
   //socket.emit("respawn");
 
-  var onClick = function(event) {
+  var onClick = function (event) {
     player.shoot();
   }
-  var onKeyDown = function(event) {
+  var onKeyDown = function (event) {
     switch (event.keyCode) {
       case 27: // escape
         setPauseUI();
@@ -271,7 +280,7 @@ function init() {
         break;
     }
   };
-  var onKeyUp = function(event) {
+  var onKeyUp = function (event) {
     switch (event.keyCode) {
       case 16: // shift
         player.unzoom();
@@ -371,6 +380,156 @@ function animate() {
   renderer.render(scene, camera);
 }
 
+// map is stored in [y[z[x]]] form, chunks use [z[y[x]]]
+// need to swap y and z
+// xyz variables below refer to the new map
+function flipMap(map) {
+  var newMap = [];
+  for (let z = 0; z < map[0].length; z++) {
+    newMap.push([]);
+    for (let y = 0; y < map.length; y++) {
+      newMap[z].push([])
+      newMap[z][y] = map[y][z];
+    }
+  }
+  return newMap;
+}
+
+// "map": [
+//   [
+//     [1, 1, 1],
+//     [1, 1, 1],
+//     [1, 1, 1],
+//     [1, 1, 1]],
+//   [
+//     [3, 0, 0],
+//     [3, 0, 0],
+//     [0, 0, 2],
+//     [0, 0, 2]],
+//   [
+//     [2, 0, 0],
+//     [0, 0, 0],
+//     [0, 0, 0],
+//     [0, 0, 3]],
+//   [
+//     [0, 0, 0],
+//     [0, 0, 0],
+//     [0, 0, 0],
+//     [0, 0, 0]],
+//   [
+//     [0, 0, 0],
+//     [0, 0, 0],
+//     [0, 0, 0],
+//     [0, 0, 0]]]
+
+// "map": [
+//   [
+//     [1, 1, 1],
+//     [3, 0, 0],
+//     [2, 0, 0],
+//     [0, 0, 0],
+//     [0, 0, 0]],
+//   [
+//     [1, 1, 1],
+//     [3, 0, 0],
+//     [0, 0, 0],
+//     [0, 0, 0],
+//     [0, 0, 0]],
+//   [
+//     [1, 1, 1],
+//     [0, 0, 2],
+//     [0, 0, 0],
+//     [0, 0, 0],
+//     [0, 0, 0]],
+//   [
+//     [1, 1, 1],
+//     [0, 0, 2],
+//     [0, 0, 3],
+//     [0, 0, 0],
+//     [0, 0, 0]]]
+
+
+function getWorldFromMap(mapContents, chunkSize) {
+  //var mapContents = readMapFile(mapFileName)
+  console.log("Mapcontents:")
+  console.log(mapContents)
+  var world = new World();
+
+  var oldMap = mapContents["map"]
+  var map = flipMap(oldMap)
+
+  var mapLenZ = map.length
+  var mapLenY = map[0].length
+  var mapLenX = map[0][0].length
+  console.log("x: " + mapLenX + " y: " + mapLenY + " z: " + mapLenZ)
+
+  // Determine the number of chunks needed for each direction
+  var numChunksZ = Math.ceil(mapLenZ / chunkSize)
+  var numChunksY = Math.ceil(mapLenY / chunkSize)
+  var numChunksX = Math.ceil(mapLenX / chunkSize)
+
+  for (let z = 0; z < mapLenZ + chunkSize; z += chunkSize) {
+    for (let y = 0; y < mapLenY + chunkSize; y += chunkSize) {
+      for (let x = 0; x < mapLenX + chunkSize; x += chunkSize) {
+        var chunkBlocks = []
+        for (let cz = 0; cz < chunkSize; cz++) {
+          chunkBlocks.push([])
+          for (let cy = 0; cy < chunkSize; cy++) {
+            // Fill in zeros if out of range of map
+            // TODO: would it be better to pad the map with 0s instead? 
+            // TODO: when y+cy > MaplenY, need to appeend some values.
+            if (z + cz > mapLenZ || y + cy > mapLenY) {
+              chunkBlocks[cz].push(Array.from({ length: chunkSize }, (v, i) => 0))
+            } else if (x + chunkSize > mapLenX) {
+              var mapArr = map[z + cz][y + cy].slice(x)
+              var emptyArr = Array.from({ length: chunkSize - mapArr }, (v, i) => 0)
+              chunkBlocks[cz].push(mapArr.concat(emptyArr))
+            }
+            chunkBlocks[cz].push(map[z + cz][y + cy].slice(x, x + chunkSize))
+          }
+        }
+        console.log("chunk blocks:")
+        console.log(chunkBlocks)
+        var chunk = new Chunk(new THREE.Vector3(z, y, x), chunkBlocks);
+        world.setChunk(chunk);
+      }
+    }
+  }
+
+  return map
+
+  // "chunk blocks": [
+  //   [
+  //     [1, 1],
+  //     [3, 0]],
+  //   [
+  //     [1, 1],
+  //     [3, 0]
+  //    ]
+
+
+  //   [
+  //     [1, 1, 1],
+  //     [0, 0, 2],
+  //     [0, 0, 0],
+  //     [0, 0, 0],
+  //     [0, 0, 0]],
+  //   [
+  //     [1, 1, 1],
+  //     [0, 0, 2],
+  //     [0, 0, 3],
+  //     [0, 0, 0],
+  //     [0, 0, 0]]]
+
+
+  // var chunkBlocks = []
+
+
+
+
+  //c = new Chunk(new THREE.Vector3(10, 0, 10), blocks);
+  //world.setChunk(c);
+}
 
 
 
@@ -413,12 +572,12 @@ var projectiles = {};
 
 function flash(player, color) {
   player.flash = true;
-  let flash = function() {
+  let flash = function () {
     if (player.flash) {
       let original_color = player.color;
       player.color = color;
       updatePlayerColor(player);
-      setTimeout(function() {
+      setTimeout(function () {
         player.color = original_color;
         updatePlayerColor(player);
         setTimeout(flash, 100);

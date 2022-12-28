@@ -13,49 +13,49 @@ var World = function () {
 
   var chunkMap = {};
 
-  function chunkKey(v){
+  function chunkKey(v) {
     // v must be floored
     return '' + v.x + ';' + v.y + ';' + v.z;
   }
 
-  function vec2chunk(v){
+  function vec2chunk(v) {
     let p = v.floor();
     return chunkMap[chunkKey(p)];
   }
 
-  function pos2chunk(p){
+  function pos2chunk(p) {
     return vec2chunk(p.clone().divide(chunkSize));
   }
 
-  this.setChunk = function(chunk){
+  this.setChunk = function (chunk) {
     chunk.world = this;
     chunkMap[chunkKey(chunk.getPosition().divide(chunkSize))] = chunk;
     focusedChunk ||= chunk;
   }
 
-  this.blockAt = function(p){
+  this.blockAt = function (p) {
     let chunk = pos2chunk(p);
-    if(!chunk){
+    if (!chunk) {
       return false;
     }
     return chunk.blockAt(p.sub(chunk.getPosition()));
   }
 
-  this.noBlockAt = function(p){
+  this.noBlockAt = function (p) {
     return !this.blockAt(p);
   }
 
-  this.adjacentChunks = function(position){
+  this.adjacentChunks = function (position) {
     let p = position.clone().divide(chunkSize).floor();
     let x = p.x;
     let y = p.y;
     let z = p.z;
     let neighbors = [];
 
-    for(let ix=-1; ix<2; ix++){
-      for(let iy=-1; iy<2; iy++){
-        for(let iz=-1; iz<2; iz++){
-          neighbors.push(vec2chunk(p.set(x+ix,y+iy,z+iz)));
+    for (let ix = -1; ix < 2; ix++) {
+      for (let iy = -1; iy < 2; iy++) {
+        for (let iz = -1; iz < 2; iz++) {
+          neighbors.push(vec2chunk(p.set(x + ix, y + iy, z + iz)));
         }
       }
     }
@@ -65,8 +65,8 @@ var World = function () {
   var visibleChunkCacheCenter = null;
   var visibleChunkCache = [];
 
-  this.visibleChunks = function(){
-    if(visibleChunkCacheCenter === focusedChunk){
+  this.visibleChunks = function () {
+    if (visibleChunkCacheCenter === focusedChunk) {
       return visibleChunkCache;
     }
 
@@ -79,10 +79,10 @@ var World = function () {
 
     let outerBound = Math.floor(renderRadius) + 1;
 
-    for(let ix=-outerBound; ix<=outerBound; ix++){
-      for(let iy=-outerBound; iy<=outerBound; iy++){
-        for(let iz=-outerBound; iz<=outerBound; iz++){
-          if(p.set(x+ix,y+iy,z+iz).distanceTo(center) <= renderRadius){
+    for (let ix = -outerBound; ix <= outerBound; ix++) {
+      for (let iy = -outerBound; iy <= outerBound; iy++) {
+        for (let iz = -outerBound; iz <= outerBound; iz++) {
+          if (p.set(x + ix, y + iy, z + iz).distanceTo(center) <= renderRadius) {
             visible.push(vec2chunk(p));
           }
         }
@@ -93,43 +93,43 @@ var World = function () {
     return visibleChunkCache;
   }
 
-  this.createEmptyChunkAt = function(position){
+  this.createEmptyChunkAt = function (position) {
     let chunk = new EmptyChunk(position.clone().divide(chunkSize).floor().multiply(chunkSize), chunkSize.clone());
     this.setChunk(chunk);
     return chunk;
   }
 
-  this.calculateFocusedChunk = function(player){
+  this.calculateFocusedChunk = function (player) {
     let p = player.getPosition();
     let playerChunk = pos2chunk(p) || this.createEmptyChunkAt(p);
 
-    if( playerChunk === focusedChunk ) return;
-    if(focusedChunk.distanceTo(p) > chunkRadius){
+    if (playerChunk === focusedChunk) return;
+    if (focusedChunk.distanceTo(p) > chunkRadius) {
       focusedChunk = playerChunk;
     }
   }
 
-  this.updateVisibleChunks = function(scene){
+  this.updateVisibleChunks = function (scene) {
     let previouslyVisible = [...visibleChunkCache]; // clone
     let visible = this.visibleChunks()
     let difference = previouslyVisible.filter(x => !visible.includes(x));
-    
-    difference.forEach( function(chunk){
+
+    difference.forEach(function (chunk) {
       chunk.unbuild(scene);
     });
-    visible.forEach( function(chunk){
+    visible.forEach(function (chunk) {
       chunk.draw(scene);
     });
   }
 
-  this.draw = function(scene, player){
-    if(!focusedChunk) return;
+  this.draw = function (scene, player) {
+    if (!focusedChunk) return;
     this.calculateFocusedChunk(player);
     this.updateVisibleChunks(scene);
   }
 
-  this.print = function(){
-    Object.keys(chunkMap).forEach(function(key){
+  this.print = function () {
+    Object.keys(chunkMap).forEach(function (key) {
       console.log(key);
     });
   }
