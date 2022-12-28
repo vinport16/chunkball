@@ -23,6 +23,13 @@ var Player = function (position_, world_) {
   var camera = null;
   var controls = null;
 
+  var loadout = {
+    class: "scout",
+    reloadTime:100,
+    loadStatus:100,
+    magazine:300,
+  };
+
   this.init = function(scene, camera_){
     camera = camera_;
     controls = new PointerLockControls(camera);
@@ -74,21 +81,32 @@ var Player = function (position_, world_) {
     }
   }
 
-  this.shoot = function(){
-    if (true){ //loadStatus > 0.999 && controls.isLocked && playerSnowballCount > 0) {
+  this.isLocked = function(){
+    return controls.isLocked;
+  }
+
+  this.launch = function(){
+    // return launch angle
+    if(loadout.loadStatus >= loadout.reloadTime && controls.isLocked && loadout.magazine > 0) {
       var vector = new THREE.Vector3(0, 0, -1);
       vector.applyQuaternion(camera.quaternion);
-
-      //socket.emit("launch", {dx:vector.x, dy:vector.y, dz:vector.z});
-      //loadStatus = 0;
-
-      //playerSnowballCount--;
-      //document.getElementById('snowballCount').innerHTML = playerSnowballCount;
+      
+      loadout.loadStatus = 0;
+      loadout.magazine -= 1;
+      document.getElementById('snowballCount').innerHTML = loadout.magazine;
+      return vector;
     }
+    return false;
   }
 
   this.getPosition = function(){
     return controls.getObject().position.clone();//.setY(controls.getObject().position.y - 0.75);
+  }
+
+  this.setPosition = function(p){
+    controls.getObject().position.setX(p.x);
+    controls.getObject().position.setY(p.y);
+    controls.getObject().position.setZ(p.x);
   }
 
   this.isPositionColliding = function(position){
@@ -223,6 +241,7 @@ var Player = function (position_, world_) {
   }
 
   this.animate = function() {
+    var time = performance.now();
     if (controls.getObject().position.y <= 2) {
       if (!playerJustFell) {
         playerJustFell = true;
@@ -240,7 +259,6 @@ var Player = function (position_, world_) {
       slightlyLower.y -= 0.01;
       var onObject = this.isPositionColliding(slightlyLower);
 
-      var time = performance.now();
       var delta = (time - prevTime) / 1000;
       velocity.x -= velocity.x * 4.0 * delta;
       velocity.z -= velocity.z * 4.0 * delta;
@@ -292,7 +310,6 @@ var Player = function (position_, world_) {
       //     respawn();
       //     canJump = true;
       // }
-      prevTime = time;
 
     } else {
       velocity.set(0, 0, 0);
@@ -302,6 +319,12 @@ var Player = function (position_, world_) {
       this.moveLeft = false;
       this.moveRight = false;
     }
+
+    loadout.loadStatus += time-prevTime;
+    loadout.loadStatus = Math.min(loadout.loadStatus, loadout.reloadTime);
+    document.getElementById( 'status-bar' ).style.width = ((loadout.loadStatus/loadout.reloadTime) * 100) + "%";
+
+    prevTime = time;
   }
 
 };
