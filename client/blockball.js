@@ -13,13 +13,14 @@ var scene = new THREE.Scene();
 var camera, renderer, controls;
 
 var chat;
-var world = new World(10, 3);
-//world.populateWorldFromMap(<map data from upload>);
-var world = chunkWorld;
-var player = new Player(new THREE.Vector3(2, 100, 3), world);
-
 var setup = new Setup();
 var communication = new Communication();
+
+var world = new World(10, 3);
+world.populateWorldFromMap(setup.getMapFile);
+//var world = chunkWorld;
+var player = new Player(new THREE.Vector3(2, 100, 3), world);
+
 
 var client = new Client(world, scene);
 client.setName(communication.getUsername());
