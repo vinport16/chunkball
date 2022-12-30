@@ -14,36 +14,49 @@ var camera, renderer, controls;
 
 var chat;
 var setup = new Setup();
-var communication = new Communication();
-
+var communication;
+var client;
+var server;
 var world = new World(10, 3);
-world.populateWorldFromMap(setup.getMapFile);
+
+setup.onReady(function () {
+
+  communication = new Communication();
+
+  client = new Client(world, scene);
+  client.setName(communication.getUsername());
+
+  if (communication.isServing()) {
+    server = new Server(world, scene);
+
+    communication.onConnect(function (conn) {
+      server.addClient(conn);
+    });
+
+    world.populateWorldFromMap(JSON.parse(setup.getMapFile()));
+
+    let channel = new Channel().getSides();
+    client.connectServer(channel[0], player);
+    server.addClient(channel[1]);
+    client.setName(communication.getUsername());
+    chat = new Chat(channel[0]);
+  } else {
+    communication.onConnect(function (conn) {
+      client.connectServer(conn, player);
+      chat = new Chat(conn);
+    });
+
+    // we can't get the map from the server yet... so just uhhh... idk
+    // add some chunks? todo
+  }
+
+  init();
+  animate();
+});
+
 //var world = chunkWorld;
 var player = new Player(new THREE.Vector3(2, 100, 3), world);
 
-
-var client = new Client(world, scene);
-client.setName(communication.getUsername());
-
-
-if (communication.isServing()) {
-  let server = new Server(world, scene);
-
-  communication.onConnect(function (conn) {
-    server.addClient(conn);
-  });
-
-  let channel = new Channel().getSides();
-  client.connectServer(channel[0], player);
-  server.addClient(channel[1]);
-  client.setName(communication.getUsername());
-  chat = new Chat(channel[0]);
-} else {
-  communication.onConnect(function (conn) {
-    client.connectServer(conn, player);
-    chat = new Chat(conn);
-  });
-}
 
 // var moveForward = false;
 // var moveBackward = false;
@@ -61,9 +74,6 @@ var loadStatus = 1;
 var playerClass = "scout";
 var reloadTime = 100;
 var playerSnowballCount = 1000;
-
-init();
-animate();
 
 
 function init() {

@@ -11,6 +11,7 @@ var Setup = function () {
   }
 
   var mapFile;
+  var ready = false;
   var onReadyFunc;
 
   if(params.serving){
@@ -33,7 +34,10 @@ var Setup = function () {
     });
 
     document.getElementById("startButton").onclick = function(){
-      onReadyFunc();
+      if (!ready) {
+        onReadyFunc();
+        ready = true;
+      }
     }
   }else if(params.joining){
     console.log("joining server", params.joining);

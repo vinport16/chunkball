@@ -159,7 +159,7 @@ var World = function (chunkSize_, renderRadius_) {
     var mapLenY = map[0].length
     var mapLenX = map[0][0].length
 
-    var chunkSizeInt = this.chunkSize.x
+    var chunkSizeInt = chunkSize.x
 
     for (let z = 0; z < mapLenZ + chunkSizeInt; z += chunkSizeInt) {
       for (let y = 0; y < mapLenY + chunkSizeInt; y += chunkSizeInt) {
