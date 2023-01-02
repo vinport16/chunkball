@@ -49,6 +49,7 @@ var Server = function (world_, scene_) {
   
   var world = world_;
   var scene = scene_;
+  var fallDepthLimit = -30; // if you fall off the world, respawn at y=-30
 
   var clients = [];
   var projectiles = [];
@@ -69,8 +70,14 @@ var Server = function (world_, scene_) {
 
     conn.on("data", function(data){
       if(data.updatePosition){
-        client.position = new THREE.Vector3(...data.updatePosition.position);
-        client.direction = new THREE.Quaternion(...data.updatePosition.direction);
+        if(!client.isTeleporting){
+          client.position = new THREE.Vector3(...data.updatePosition.position);
+          client.direction = new THREE.Quaternion(...data.updatePosition.direction);
+          if(client.position.y < fallDepthLimit){
+            client.sendAnnouncement("you fell!");
+            respawn(client);
+          }
+        }
       }
       if(data.updateName){
         client.name = data.updateName;
@@ -212,7 +219,7 @@ var Server = function (world_, scene_) {
 
   function respawn(client){
     // find a new position ?
-    let moveto = new THREE.Vector3(4,6,4);
+    let moveto = new THREE.Vector3(4,60,4);
     client.isTeleporting = true;
     client.conn.send({moveTo:moveto.toArray()});
   }
