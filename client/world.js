@@ -155,8 +155,8 @@ var World = function (chunkSize_, renderRadius_) {
     let difference = previouslyVisible.filter(x => !visible.includes(x));
 
     difference.forEach(function (chunk) {
-      chunk.unbuild(scene);
-      // unfollow
+      chunk.hide(scene); // keep graphics object in memory
+      // unfollow ?
     });
     visible.forEach(function (chunk) {
       chunk.draw(scene);
