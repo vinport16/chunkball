@@ -10,13 +10,12 @@ var Setup = function () {
     params[key] = value
   }
 
-  var mapFile;
+  var mapFile = false;
   var ready = false;
   var onReadyFunc;
 
   if(params.serving){
     console.log("starting server", params.serving);
-    document.getElementById("startButton").disabled = true;
 
     let doc = document.getElementById("mapfile");
     doc.addEventListener("change", function(){
@@ -26,12 +25,24 @@ var Setup = function () {
         let text = event.target.result;
         // check if text is valid json formatte map?
         mapFile = text;
-        document.getElementById("startButton").disabled = false;
       }
       if(file){
         reader.readAsText(file);
       }
     });
+
+    let select = document.getElementById("selectedMap");
+    let useSelectedMap = function(){
+      let xmlHttp = new XMLHttpRequest();
+      xmlHttp.onreadystatechange = function() { 
+          if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+              mapFile = xmlHttp.responseText;
+      }
+      xmlHttp.open("GET", select.value, true); // true for asynchronous 
+      xmlHttp.send(null);
+    }
+    select.addEventListener("change", useSelectedMap);
+    useSelectedMap();
 
   }else if(params.joining){
     console.log("joining server", params.joining);
@@ -41,7 +52,8 @@ var Setup = function () {
   }
 
   document.getElementById("startButton").onclick = function(){
-    if (!ready) {
+    if (!ready && (params.joining || mapFile)) {
+      document.getElementById('mapSelect').hidden = true;
       onReadyFunc();
       ready = true;
     }

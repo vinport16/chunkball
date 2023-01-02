@@ -6,9 +6,10 @@ var port = 3030;
 
 app.use('/client', express.static('client'));
 app.use('/mapEditor', express.static('mapEditor'));
+app.use('/maps', express.static('maps'));
 app.use('/start', express.static('start'));
 
-app.get('/', (req, res, next) => res.redirect('/start')); //res.send('Hello world!'));
+app.get('/', (req, res, next) => res.redirect('/start'));
 console.log("created index");
 
 server.listen(port);

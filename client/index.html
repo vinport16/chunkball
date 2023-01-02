@@ -157,21 +157,27 @@
     <div id="blocker">
 
         <div id="instructions">
-            <span style="font-size: 50px">Welcome to BlockBall!</span>
-            <br/><br/><br/>
+            <br/><br/>
             <input hidden id="userName" type="text" name="userName" value="userName">
             <br/><br/>
             Move: WASD<br/>
             Jump: SPACE<br/>
             Look: MOUSE<br/>
-            Shoot: Left Click <br/>
+            Shoot: Left Click or E<br/>
             Sprint: WW <br/>
             Scope: SHIFT <br/>
             Message: T <br/>
             Change Shot Type: X <br/>
             <br/>
             <span id="mapSelect">
-                upload map: <input type="file" id="mapfile" name="file" enctype="multipart/form-data" /><br>
+                select a map:
+                <select id="selectedMap">
+                    <option value="../maps/testSpawn.json">small testing map</option>
+                    <option value="../maps/firstTown.json">first town</option>
+                    <option value="../maps/smallCity.json">small city</option>
+                    <option value="../maps/lakeHouse.json">lakehouse</option>
+                </select><br/>
+                upload a map: <input type="file" id="mapfile" name="file" enctype="multipart/form-data" /><br>
                 <span id="mapSelectFeedback"></span>
             </span>
             <br/>

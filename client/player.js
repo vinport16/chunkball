@@ -47,6 +47,14 @@ var Player = function (position_, world_) {
     controls.unlock();
   }
 
+  this.onControlsLock = function(f){
+    controls.addEventListener('lock', f);
+  }
+
+  this.onControlsUnlock = function(f){
+    controls.addEventListener('unlock', f);
+  }
+
   this.zoom = function(){
     camera.fov = 10;
     controls.speedFactor = 0.0004;

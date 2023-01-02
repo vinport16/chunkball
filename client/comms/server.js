@@ -31,8 +31,9 @@ var Client = function (id_, conn_) {
       let p = projectile.getPosition();
       var dz = this.position.z - p.z;
       var dx = this.position.x - p.x;
-      var bottom = this.position.y - (1.5/2);
-      var top = this.position.y + (1.5/2);
+      // position is camera position: 1.5 above ground
+      var bottom = this.position.y - (1.5);
+      var top = this.position.y + (0.25);
 
       if( Math.sqrt(dz*dz + dx*dx) < 0.375 && p.y < top && p.y > bottom ){
         return true;

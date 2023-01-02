@@ -84,8 +84,11 @@ var Agent = function (scene_) {
     model.add(nameTag); // add as child object
   }
 
+  var yoffset = 2 - (1.75/2) - 0.5;
   this.updatePosition = function(p, facing) {
-    model.position.set(...p.setY(p.y - 0.75).toArray());
+    // p is camera position, 1.5 above ground
+    // model position is in the center of the cylinder
+    model.position.set(...p.setY(p.y - yoffset).toArray());
     face.quaternion.set(...facing.toArray());
   }
 
@@ -152,6 +155,26 @@ var Agent = function (scene_) {
 
   this.remove = function(){
     scene.remove(model);
+  }
+
+  this.flash = function(flashColor) {
+    this.flashing = true;
+    let self = this; // so we can reference from within the function
+    let flash = function () {
+      if (self.flashing) {
+        let originalColor = color;
+        self.updateColor(flashColor);
+        setTimeout(function () {
+          self.updateColor(originalColor);
+          setTimeout(flash, 100);
+        }, 100);
+      }
+    }
+    flash();
+  }
+
+  this.stopFlash = function(){
+    this.flashing = false;
   }
 
 

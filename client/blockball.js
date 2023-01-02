@@ -10,14 +10,18 @@ import {Channel} from './comms/channel.js';
 import {Chat} from './comms/chat.js'
 import {Setup} from './setup.js'
 var scene = new THREE.Scene();
-var camera, renderer, controls;
+var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
+var renderer, controls;
 
 var chat;
 var setup = new Setup();
 var communication;
 var client;
 var server;
-var world = new World(10, 3);
+var world = new World(10, 6);
+
+var player = new Player(new THREE.Vector3(4, 60, 4), world);
+player.init(scene, camera)
 
 setup.onReady(function () {
 
@@ -56,30 +60,29 @@ setup.onReady(function () {
   }
 
   init();
+  player.play();
   animate();
 });
 
-//var world = chunkWorld;
-var player = new Player(new THREE.Vector3(2, 100, 3), world);
 
-
-// var moveForward = false;
-// var moveBackward = false;
-// var moveLeft = false;
-// var moveRight = false;
-// var canJump = false;
-// var velocity = new THREE.Vector3();
-// var terminalVelocityY = -25;
-// var direction = new THREE.Vector3();
-// var color = new THREE.Color();
-// var sprint = false;
+// this is only used to measure a double-w-press for sprinting
 var startTime = Date.now();
-// var playerJustFell = false;
-var loadStatus = 1;
-var playerClass = "scout";
-var reloadTime = 100;
-var playerSnowballCount = 1000;
 
+
+function setPlayUI() {
+  instructions.style.display = 'none';
+  leaderboard.style.display = '';
+  blocker.style.display = 'none';
+}
+
+function setPauseUI() {
+  blocker.style.display = 'block';
+  instructions.style.display = '';
+  leaderboard.style.display = '';
+}
+
+player.onControlsLock(setPlayUI);
+player.onControlsUnlock(setPauseUI);
 
 function init() {
   //scene.background = new THREE.Color( 0x44ff00 );
@@ -91,51 +94,30 @@ function init() {
   light.position.set(0.5, 1, 0.75);
   scene.add(light);
 
+  // for graphics testing
   let a = new Agent(scene);
   a.setName("test player");
   a.draw();
-  a.updatePosition(new THREE.Vector3(10.5, 3.5, 1.5), new THREE.Vector3());
+  a.updatePosition(new THREE.Vector3(4.5, 4.5, 1.5), new THREE.Quaternion(0.01,0.01,1,0.01));
 
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
-  camera.position.y = 10;
   add_crosshair(camera);
-
-  player.init(scene, camera)
 
   var blocker = document.getElementById('blocker');
   var instructions = document.getElementById('instructions');
   var leaderboard = document.getElementById('leaderboard');
   var startButton = document.getElementById('startButton');
 
-  function setPlayUI() {
-    instructions.style.display = 'none';
-    leaderboard.style.display = '';
-    blocker.style.display = 'none';
-  }
-
-  function setPauseUI() {
-    blocker.style.display = 'block';
-    instructions.style.display = '';
-    leaderboard.style.display = '';
-  }
-
   startButton.addEventListener('click', function () {
     var username = document.getElementById('userName').value;
-    //socket.emit("setUser", {name:username});
     player.play();
     setPlayUI();
   }, false);
-
-  //socket.emit("respawn");
 
   var onClick = function (event) {
     client.launch();
   }
   var onKeyDown = function (event) {
     switch (event.keyCode) {
-      case 27: // escape
-        setPauseUI();
-        break;
       case 16: // shift
         player.zoom();
         break;
@@ -290,17 +272,6 @@ function animate() {
 
 
 
-
-
-
-
-
-var players = {};
-var projectiles = {};
-
-
-
-
 //Move this to a draw player function and call it from update player when player properties change
 // socket.on("new player", function(player){
 //     drawPlayer(player);
@@ -314,31 +285,6 @@ var projectiles = {};
 //     p.color = player.color;
 //     updatePlayerColor(p);
 //     updatePlayerNameTag(p);
-// });
-
-function flash(player, color) {
-  player.flash = true;
-  let flash = function () {
-    if (player.flash) {
-      let original_color = player.color;
-      player.color = color;
-      updatePlayerColor(player);
-      setTimeout(function () {
-        player.color = original_color;
-        updatePlayerColor(player);
-        setTimeout(flash, 100);
-      }, 100);
-    }
-  }
-  flash();
-}
-
-// socket.on("flash player", function(player_id, color){
-//     flash(players[player_id], color);
-// });
-
-// socket.on("stop flash", function(player_id){
-//     players[player_id].flash = false;
 // });
 
 // socket.on("set class", function(newClass){
