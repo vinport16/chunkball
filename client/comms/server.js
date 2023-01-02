@@ -238,6 +238,7 @@ var Server = function (world_, scene_) {
     client.conn.send({chunk:{
       position: chunk.getPosition().toArray(),
       blocks: chunk.getBlocks(),
+      colors: chunk.getColors(),
     }});
   }
 

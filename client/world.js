@@ -208,7 +208,7 @@ var World = function (chunkSize_, renderRadius_) {
               }
             }
           }
-          var chunk = new Chunk(new THREE.Vector3(z, y, x), chunkBlocks);
+          var chunk = new Chunk(new THREE.Vector3(z, y, x), chunkBlocks, mapContents.colors);
           this.setChunk(chunk);
         }
       }

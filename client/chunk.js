@@ -1,9 +1,9 @@
-var Chunk = function (position_, blocks_) {
+var Chunk = function (position_, blocks_, colors_) {
   
   var position = position_.clone().floor();
   // assume blocks is a perfect X by Y by Z prism - validate this in future? TODO
   var blocks = blocks_;
-  var entities = [];
+  var colors = colors_;
   var graphicsObject = null;
 
   var blockUpdate = false;
@@ -22,6 +22,10 @@ var Chunk = function (position_, blocks_) {
 
   this.getPosition = function(){
     return position.clone();
+  }
+
+  this.getColors = function(){
+    return colors;
   }
 
   function makeSides(v,p){
@@ -125,8 +129,8 @@ var Chunk = function (position_, blocks_) {
         line.forEach(function(block, k) {
           let v = new THREE.Vector3(i,j,k);
           if(self.blockAt(v)){
-            var boxMaterial = new THREE.MeshLambertMaterial({color: "#4450FB"});
-            boxMaterial.color.offsetHSL(0,0, Math.random() * 0.1 * 2 - 0.1 )
+            var boxMaterial = new THREE.MeshLambertMaterial({color: colors[block][0]});
+            boxMaterial.color.offsetHSL(0,0, Math.random() * colors[block][1] * 2 - colors[block][1] )
             
             // block's graphics position (center position)
             var p = v.clone().addScalar(0.5);

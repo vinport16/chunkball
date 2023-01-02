@@ -84,7 +84,8 @@ var Client = function (world_, scene_) {
       if(data.chunk){
         let p = new THREE.Vector3(...data.chunk.position);
         let blocks = data.chunk.blocks;
-        let chunk = new Chunk(p, blocks);
+        let colors = data.chunk.colors;
+        let chunk = new Chunk(p, blocks, colors);
         world.setChunk(chunk);
       }
     });
