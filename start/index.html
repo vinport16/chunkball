@@ -1,50 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chunkball</title>
-    <!--link rel="stylesheet" href="css/main.css" /-->
-    <!--link rel="icon" href="images/favicon.png" /-->
-  </head>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <body>
-    <h1>chunkball</h1>
-    Username: <input type="text" id="playername"/><br>
-    Game ID: <input type="text" id="gamecode"/><br>
-    <hr>
-    <a href="../client/index.html" id="hostlink">host a game</a><br>
-    <a href="../client/index.html" id="joinlink">join a game</a><br>
-    hello :) :)
-  </body>
+  <title>chunkball</title>
+  <!--link rel="stylesheet" href="css/main.css" /-->
+</head>
 
-  <script type="text/javascript">
+<body>
+  <h1>chunkball</h1>
+  Username: <input type="text" id="playername" /><br>
+  Game ID: <input type="text" id="gamecode" /><br>
+  <hr>
+  <a href="../client/index.html" id="hostlink">host a game</a><br>
+  <a href="../client/index.html" id="joinlink">join a game</a><br>
+  hello :) :)<br>
+  <a href="../mapEditor/index.html">Create or Edit a Map</a><br>
+</body>
 
-    var servingURL = new URL(document.getElementById("hostlink").href);
-    var joiningURL = new URL(document.getElementById("joinlink").href);
+<script type="text/javascript">
 
-    var nameinput = document.getElementById('playername');
-    function setUserName(){
-      servingURL.searchParams.set('username', nameinput.value);
-      joiningURL.searchParams.set('username', nameinput.value);
-      document.getElementById("hostlink").href = servingURL;
-      document.getElementById("joinlink").href = joiningURL;
-    };
-    nameinput.onchange = setUserName;
+  var servingURL = new URL(document.getElementById("hostlink").href);
+  var joiningURL = new URL(document.getElementById("joinlink").href);
 
-    var gameidinput = document.getElementById('gamecode');    
-    function setGameID(){
-      servingURL.searchParams.set('serving', gameidinput.value);
-      joiningURL.searchParams.set('joining', gameidinput.value);
-      document.getElementById("hostlink").href = servingURL;
-      document.getElementById("joinlink").href = joiningURL;
-    };
-    gameidinput.onchange = setGameID;
+  var nameinput = document.getElementById('playername');
+  function setUserName() {
+    servingURL.searchParams.set('username', nameinput.value);
+    joiningURL.searchParams.set('username', nameinput.value);
+    document.getElementById("hostlink").href = servingURL;
+    document.getElementById("joinlink").href = joiningURL;
+  };
+  nameinput.onchange = setUserName;
 
-    setGameID();
-    setUserName();
-    
-  </script>
+  var gameidinput = document.getElementById('gamecode');
+  function setGameID() {
+    servingURL.searchParams.set('serving', gameidinput.value);
+    joiningURL.searchParams.set('joining', gameidinput.value);
+    document.getElementById("hostlink").href = servingURL;
+    document.getElementById("joinlink").href = joiningURL;
+  };
+  gameidinput.onchange = setGameID;
+
+  setGameID();
+  setUserName();
+
+</script>
+
 </html>

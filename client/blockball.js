@@ -8,150 +8,59 @@ import {Server} from './comms/server.js';
 import {Client} from './comms/client.js';
 import {Channel} from './comms/channel.js';
 import {Chat} from './comms/chat.js'
+import {Setup} from './setup.js'
 var scene = new THREE.Scene();
 var camera, renderer, controls;
 
 var chat;
-var world = new World();
-var player = new Player(new THREE.Vector3(4,25,4), world);
+var setup = new Setup();
+var communication;
+var client;
+var server;
+var world = new World(10, 3);
 
-var communication = new Communication();
+setup.onReady(function () {
 
-var client = new Client(world, scene);
-client.setName(communication.getUsername());
+  communication = new Communication();
 
-
-if(communication.isServing()){
-  let server = new Server(world, scene);
-
-  communication.onConnect(function(conn){
-    server.addClient(conn);
-  });
-
-  let channel = new Channel().getSides();
-  client.connectServer(channel[0], player);
-  server.addClient(channel[1]);
+  client = new Client(world, scene);
   client.setName(communication.getUsername());
-  chat = new Chat(channel[0]);
-}else{
-  communication.onConnect(function(conn){
-    client.connectServer(conn, player);
-    chat = new Chat(conn);
-  });
-}
 
+  if (communication.isServing()) {
 
-let blocks = [
-  [
-    [1, 1, 0, 0, 0, 1, 0, 0, 1, 1],
-    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  ],
-  [
-    [1, 1, 0, 0, 0, 1, 0, 0, 1, 1],
-    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  ]
-];
+    server = new Server(world, scene);
 
-for (let i = 0; i < 8; i++) {
-  blocks.push([
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  ]);
-}
+    communication.onConnect(function (conn) {
+      server.addClient(conn);
+    });
 
-let flatchunk = [];
-for (let i = 0; i < 10; i++) {
-  flatchunk.push([
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  ]);
-}
+    world.populateWorldFromMap(JSON.parse(setup.getMapFile()));
 
-function tentchunk(){
-  let tc = [];
-  for (let i = 0; i < 10; i++) {
-    tc.push([
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
-      [0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
-      [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
-      [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
-      [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
-      [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
-      [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-      [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    ]);
+    let channel = new Channel().getSides();
+    client.connectServer(channel[0], player);
+    server.addClient(channel[1]);
+    client.setName(communication.getUsername());
+    chat = new Chat(channel[0]);
+
+  } else {
+
+    communication.onConnect(function (conn) {
+      client.connectServer(conn, player);
+      chat = new Chat(conn);
+
+      world.setRequestChunkFunc(function(p){
+        conn.send({requestChunk:{position:p.toArray()}});
+      });
+      world.fullRefresh();
+    });
   }
-  return tc;
-}
 
-let c = new Chunk(new THREE.Vector3(0, 0, 0), blocks);
-world.setChunk(c);
+  init();
+  animate();
+});
 
-for (let x = -5; x <= 5; x++) {
-  for (let z = -5; z <= 5; z++) {
-    let c = new Chunk(new THREE.Vector3(x * 10, -10, z * 10), flatchunk);
-    world.setChunk(c);
-  }
-}
-
-c = new Chunk(new THREE.Vector3(-10, 0, 0), tentchunk());
-world.setChunk(c);
-c = new Chunk(new THREE.Vector3(-10, 0, -10), tentchunk());
-world.setChunk(c);
-
-c = new Chunk(new THREE.Vector3(10, 0, 0), blocks);
-world.setChunk(c);
-c = new Chunk(new THREE.Vector3(10, 0, 10), blocks);
-world.setChunk(c);
-
-c = new Chunk(new THREE.Vector3(10, 10, 10), blocks);
-world.setChunk(c);
-
-c = new Chunk(new THREE.Vector3(20, 10, 10), blocks);
-world.setChunk(c);
-
-c = new Chunk(new THREE.Vector3(30, 10, 10), blocks);
-world.setChunk(c);
-
-c = new Chunk(new THREE.Vector3(40, 10, 10), blocks);
-world.setChunk(c);
-
-c = new Chunk(new THREE.Vector3(30, 10, 10), blocks);
-world.setChunk(c);
+//var world = chunkWorld;
+var player = new Player(new THREE.Vector3(2, 100, 3), world);
 
 
 // var moveForward = false;
@@ -171,9 +80,6 @@ var playerClass = "scout";
 var reloadTime = 100;
 var playerSnowballCount = 1000;
 
-init();
-animate();
-
 
 function init() {
   //scene.background = new THREE.Color( 0x44ff00 );
@@ -188,7 +94,7 @@ function init() {
   let a = new Agent(scene);
   a.setName("test player");
   a.draw();
-  a.updatePosition(new THREE.Vector3(10.5,3.5,1.5), new THREE.Vector3());
+  a.updatePosition(new THREE.Vector3(10.5, 3.5, 1.5), new THREE.Vector3());
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
   camera.position.y = 10;
@@ -201,19 +107,19 @@ function init() {
   var leaderboard = document.getElementById('leaderboard');
   var startButton = document.getElementById('startButton');
 
-  function setPlayUI(){
+  function setPlayUI() {
     instructions.style.display = 'none';
     leaderboard.style.display = '';
     blocker.style.display = 'none';
   }
 
-  function setPauseUI(){
+  function setPauseUI() {
     blocker.style.display = 'block';
     instructions.style.display = '';
     leaderboard.style.display = '';
   }
 
-  startButton.addEventListener('click', function() {
+  startButton.addEventListener('click', function () {
     var username = document.getElementById('userName').value;
     //socket.emit("setUser", {name:username});
     player.play();
@@ -222,10 +128,10 @@ function init() {
 
   //socket.emit("respawn");
 
-  var onClick = function(event) {
+  var onClick = function (event) {
     client.launch();
   }
-  var onKeyDown = function(event) {
+  var onKeyDown = function (event) {
     switch (event.keyCode) {
       case 27: // escape
         setPauseUI();
@@ -270,7 +176,7 @@ function init() {
         break;
     }
   };
-  var onKeyUp = function(event) {
+  var onKeyUp = function (event) {
     switch (event.keyCode) {
       case 16: // shift
         player.unzoom();
@@ -412,12 +318,12 @@ var projectiles = {};
 
 function flash(player, color) {
   player.flash = true;
-  let flash = function() {
+  let flash = function () {
     if (player.flash) {
       let original_color = player.color;
       player.color = color;
       updatePlayerColor(player);
-      setTimeout(function() {
+      setTimeout(function () {
         player.color = original_color;
         updatePlayerColor(player);
         setTimeout(flash, 100);

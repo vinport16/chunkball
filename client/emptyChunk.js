@@ -9,6 +9,8 @@ var EmptyChunk = function(position_, size_){
 
   this.world = null;
 
+  this.isEmpty = true;
+
   this.blockAt = function(v){
     return false;
   }

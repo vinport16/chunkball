@@ -114,7 +114,7 @@ var Chunk = function (position_, blocks_) {
     return sides;
   }
 
-  this.build = function(scene){
+  this.build = function(){
     // origin is the position of the currently focused chunk, which is treated as 0 for graphics
 
     let self = this; // needed to refer to 'this' inside forEach
@@ -157,30 +157,35 @@ var Chunk = function (position_, blocks_) {
     let mat = new THREE.MeshLambertMaterial({ vertexColors: THREE.FaceColors });
     var mesh = new THREE.Mesh(allBoxes, mat);
     graphicsObject = mesh;
-    scene.add(mesh);
   }
 
   this.draw = function(scene){
     if(graphicsObject == null){
-      this.build(scene);
+      this.build();
+      scene.add(graphicsObject);
     }
+    graphicsObject.visible = true;
     if(blockUpdate.length > 0){
       // do update
-      // this.build(scene, origin);
+      // this.build();
     }
   }
 
   this.hide = function(scene){
-    scene.remove(graphicsObject);
+    graphicsObject.visible = false;
   }
 
   this.unbuild = function(scene){
-    this.hide(scene);
+    scene.remove(graphicsObject);
     graphicsObject = null;
   }
 
   this.size = function(){
     return new THREE.Vector3(blocks.length, blocks[0].length, blocks[0][0].length);
+  }
+
+  this.getBlocks = function(){
+    return blocks;
   }
 
   this.distanceTo = function(p){

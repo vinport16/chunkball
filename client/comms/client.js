@@ -1,5 +1,7 @@
 import {Agent} from '../agent.js';
 import {Projectile} from '../projectile.js';
+import {Chunk} from '../chunk.js';
+
 /*
 Client manages the connection to the server peer
 */
@@ -76,6 +78,12 @@ var Client = function (world_, scene_) {
         agents[data.playerLeft.id].remove();
         agents[data.playerLeft.id] = null;
         // let the garbage collector do the rest
+      }
+      if(data.chunk){
+        let p = new THREE.Vector3(...data.chunk.position);
+        let blocks = data.chunk.blocks;
+        let chunk = new Chunk(p, blocks);
+        world.setChunk(chunk);
       }
     });
 
