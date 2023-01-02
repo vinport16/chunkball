@@ -9,7 +9,7 @@ An agent has:
 var Agent = function (scene_) {
   
   var scene = scene_;
-  var direction = new THREE.Vector3();
+  var direction = new THREE.Quaternion();
 
   var color = new THREE.Color("red");
   var playerClass = "scout";
@@ -17,6 +17,7 @@ var Agent = function (scene_) {
 
   var model;
   var nameTag;
+  var face;
 
   this.setClass = function(c){
     playerClass = c;
@@ -50,28 +51,42 @@ var Agent = function (scene_) {
     model.position.x = 0;
     model.position.y = 0;
     model.position.z = 0;
-    model.name = "MODEL FOR: " + name;
 
-    this.updateNameTag(scene);
+    this.updateNameTag();
+    drawFace();
 
     scene.add(model);
   };
 
+  function drawFace(){
+    var cylinderGeometry = new THREE.CylinderBufferGeometry(0.1, 0.1, 0.75, 5);
+    cylinderGeometry = cylinderGeometry.toNonIndexed(); // ensure each face has unique vertices
+    cylinderGeometry.translate(0, 0.75/2, 0); // raise half height so origin is at bottom of cylinder
+    cylinderGeometry.rotateX(-3.1416/2); // rotate to point towards 0,0,0,0 quaternion (default rotation)
+
+    var material = new THREE.MeshLambertMaterial({
+      color: 'green',
+    });
+
+    face = new THREE.Mesh(cylinderGeometry, material);
+    face.position.setY(0.75);
+
+    model.add(face);
+  }
+
   this.updateNameTag = function() {
     let ntp = new THREE.Vector3();
     if (nameTag) {
-      let ntp = nameTag.position.clone();
-      scene.remove(nameTag);
+      model.remove(nameTag);
     }
     nameTag = makeTextSprite(name);
-    nameTag.position.set(ntp);
-    nameTag.name = "NAMETAG FOR: " + name;
-    scene.add(nameTag);
+    nameTag.position.set(0,0.75,0); // relative to player
+    model.add(nameTag); // add as child object
   }
 
   this.updatePosition = function(p, facing) {
-    nameTag.position.set(...p.toArray());
     model.position.set(...p.setY(p.y - 0.75).toArray());
+    face.quaternion.set(...facing.toArray());
   }
 
   this.updateColor = function(c) {
@@ -137,7 +152,6 @@ var Agent = function (scene_) {
 
   this.remove = function(){
     scene.remove(model);
-    scene.remove(nameTag);
   }
 
 

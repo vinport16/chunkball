@@ -54,9 +54,11 @@ var Client = function (world_, scene_) {
       if(data.playerPositions){
         data.playerPositions.forEach(function(player){
           if(agents[player.id]){
-            agents[player.id].updatePosition(new THREE.Vector3(...player.position));
+            let p = new THREE.Vector3(...player.position);
+            let d = new THREE.Quaternion(...player.direction);
+            agents[player.id].updatePosition(p, d);
           }else{
-            // this is your position
+            // this is your position: ignore
           }
         });
       }
@@ -95,7 +97,10 @@ var Client = function (world_, scene_) {
     (async () => {
       while ("Vincent" > "Michael") {
         await sleep(20);
-        conn.send({updatePosition: {position: player.getPosition().toArray()}});
+        conn.send({updatePosition: {
+          position: player.getPosition().toArray(),
+          direction: player.getDirection().toArray(),
+        }});
       }
     })();
 

@@ -12,6 +12,7 @@ var Client = function (id_, conn_) {
   this.conn = conn_;
   this.name = "username";
   this.position = new THREE.Vector3();
+  this.direction = new THREE.Quaternion();
   this.removed = false;
   this.isTeleporting = false;
   this.loadout = new Loadout(Loadout.SCOUT);
@@ -68,6 +69,7 @@ var Server = function (world_, scene_) {
     conn.on("data", function(data){
       if(data.updatePosition){
         client.position = new THREE.Vector3(...data.updatePosition.position);
+        client.direction = new THREE.Quaternion(...data.updatePosition.direction);
       }
       if(data.updateName){
         client.name = data.updateName;
@@ -100,10 +102,17 @@ var Server = function (world_, scene_) {
 
   this.sendUpdates = function(){
     let allPositions = clients.map(function(client){
-      return {id: client.id, position: client.position.toArray()};
+      return {
+        id: client.id,
+        position: client.position.toArray(),
+        direction: client.direction.toArray(),
+      };
     });
     let allProjectiles = projectiles.map(function(p){
-      return {id: p.id, position: p.getPosition().toArray()};
+      return {
+        id: p.id,
+        position: p.getPosition().toArray(),
+      };
     })
     clients.forEach(function(client){
       client.conn.send({

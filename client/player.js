@@ -103,6 +103,10 @@ var Player = function (position_, world_) {
     return controls.getObject().position.clone();//.setY(controls.getObject().position.y - 0.75);
   }
 
+  this.getDirection = function(){
+    return camera.quaternion.clone();
+  }
+
   this.setPosition = function(p){
     controls.getObject().position.setX(p.x);
     controls.getObject().position.setY(p.y);
