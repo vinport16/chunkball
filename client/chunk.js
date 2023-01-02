@@ -183,6 +183,10 @@ var Chunk = function (position_, blocks_) {
     return new THREE.Vector3(blocks.length, blocks[0].length, blocks[0][0].length);
   }
 
+  this.getBlocks = function(){
+    return blocks;
+  }
+
   this.distanceTo = function(p){
     let above = this.size().sub(p); // if positive, outside
     let below = p.clone().sub(this.getPosition()).sub(this.size()); // if positive, outside

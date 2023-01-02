@@ -33,18 +33,18 @@ var Setup = function () {
       }
     });
 
-    document.getElementById("startButton").onclick = function(){
-      if (!ready) {
-        onReadyFunc();
-        ready = true;
-      }
-    }
   }else if(params.joining){
     console.log("joining server", params.joining);
     document.getElementById('mapSelect').hidden = true;
-    onReadyFunc(); // client is immediately ready
   }else{
     console.log("neither serving nor joining...");
+  }
+
+  document.getElementById("startButton").onclick = function(){
+    if (!ready) {
+      onReadyFunc();
+      ready = true;
+    }
   }
 
   this.isServing = function(){

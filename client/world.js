@@ -9,6 +9,10 @@ var World = function (chunkSize_, renderRadius_) {
   // how far do you have to move from the focused chunk to change focus?
   var chunkRadius = 2;
 
+  // call this function to request a chunk from the server. If this
+  // function is null, you are the server.
+  var requestChunk = null;
+
   var focusedChunk = null;
 
   var chunkMap = {};
@@ -21,6 +25,10 @@ var World = function (chunkSize_, renderRadius_) {
   function vec2chunk(v) {
     let p = v.floor();
     return chunkMap[chunkKey(p)];
+  }
+
+  function vec2pos(v) {
+    return v.multiply(chunkSize);
   }
 
   function pos2chunk(p) {
@@ -45,7 +53,6 @@ var World = function (chunkSize_, renderRadius_) {
   this.setChunk = function (chunk) {
     chunk.world = this;
     chunkMap[chunkKey(chunk.getPosition().divide(chunkSize))] = chunk;
-    focusedChunk ||= chunk;
   }
 
   this.blockAt = function (p) {
@@ -54,6 +61,10 @@ var World = function (chunkSize_, renderRadius_) {
       return false;
     }
     return chunk.blockAt(p.clone().sub(chunk.getPosition()));
+  }
+
+  this.chunkAt = function (p) {
+    return pos2chunk(p);
   }
 
   this.noBlockAt = function (p) {
@@ -70,11 +81,16 @@ var World = function (chunkSize_, renderRadius_) {
     for (let ix = -1; ix < 2; ix++) {
       for (let iy = -1; iy < 2; iy++) {
         for (let iz = -1; iz < 2; iz++) {
-          neighbors.push(vec2chunk(p.set(x + ix, y + iy, z + iz)));
+          let chunk = vec2chunk(p.set(x + ix, y + iy, z + iz));
+          neighbors.push(chunk);
         }
       }
     }
     return neighbors;
+  }
+
+  this.setRequestChunkFunc = function(req) {
+    requestChunk = req;
   }
 
   var visibleChunkCacheCenter = null;
@@ -98,7 +114,12 @@ var World = function (chunkSize_, renderRadius_) {
       for (let iy = -outerBound; iy <= outerBound; iy++) {
         for (let iz = -outerBound; iz <= outerBound; iz++) {
           if (p.set(x + ix, y + iy, z + iz).distanceTo(center) <= renderRadius) {
-            visible.push(vec2chunk(p));
+            let chunk = vec2chunk(p);
+            if (!chunk && requestChunk) {
+              chunk = this.createEmptyChunkAt(vec2pos(p));
+              requestChunk(chunk.getPosition());
+            }
+            visible.push(chunk);
           }
         }
       }
@@ -116,10 +137,14 @@ var World = function (chunkSize_, renderRadius_) {
 
   this.calculateFocusedChunk = function (player) {
     let p = player.getPosition();
-    let playerChunk = pos2chunk(p) || this.createEmptyChunkAt(p);
+    let playerChunk = pos2chunk(p);
+    if(!playerChunk && requestChunk){
+      playerChunk = this.createEmptyChunkAt(p);
+      requestChunk(p);
+    }
 
     if (playerChunk === focusedChunk) return;
-    if (focusedChunk.distanceTo(p) > chunkRadius) {
+    if (!focusedChunk || focusedChunk.distanceTo(p) > chunkRadius) {
       focusedChunk = playerChunk;
     }
   }
@@ -131,6 +156,7 @@ var World = function (chunkSize_, renderRadius_) {
 
     difference.forEach(function (chunk) {
       chunk.unbuild(scene);
+      // unfollow
     });
     visible.forEach(function (chunk) {
       chunk.draw(scene);
@@ -138,8 +164,8 @@ var World = function (chunkSize_, renderRadius_) {
   }
 
   this.draw = function (scene, player) {
-    if (!focusedChunk) return;
     this.calculateFocusedChunk(player);
+    if (!focusedChunk) return;
     this.updateVisibleChunks(scene);
   }
 
@@ -168,7 +194,6 @@ var World = function (chunkSize_, renderRadius_) {
           for (let cz = 0; cz < chunkSizeInt; cz++) {
             chunkBlocks.push([])
             for (let cy = 0; cy < chunkSizeInt; cy++) {
-              //console.log("x: " + x + " y: " + y + " z: " + z + " cz: " + cz + " cy: " + cy)
               // Fill in zeros if out of range of map
               if (z + cz >= mapLenZ) {
                 chunkBlocks[cz].push(Array.from({ length: chunkSizeInt }, (v, i) => 0))
@@ -188,6 +213,12 @@ var World = function (chunkSize_, renderRadius_) {
         }
       }
     }
+  }
+
+  this.fullRefresh = function () {
+    chunkMap = {};
+    visibleChunkCache = [];
+    visibleChunkCacheCenter = null;
   }
 };
 

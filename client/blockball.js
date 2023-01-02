@@ -27,6 +27,7 @@ setup.onReady(function () {
   client.setName(communication.getUsername());
 
   if (communication.isServing()) {
+
     server = new Server(world, scene);
 
     communication.onConnect(function (conn) {
@@ -40,14 +41,18 @@ setup.onReady(function () {
     server.addClient(channel[1]);
     client.setName(communication.getUsername());
     chat = new Chat(channel[0]);
+
   } else {
+
     communication.onConnect(function (conn) {
       client.connectServer(conn, player);
       chat = new Chat(conn);
-    });
 
-    // we can't get the map from the server yet... so just uhhh... idk
-    // add some chunks? todo
+      world.setRequestChunkFunc(function(p){
+        conn.send({requestChunk:{position:p.toArray()}});
+      });
+      world.fullRefresh();
+    });
   }
 
   init();

@@ -84,6 +84,10 @@ var Server = function (world_, scene_) {
         client.position = new THREE.Vector3(...data.doneMovingTo);
         client.isTeleporting = false;
       }
+      if(data.requestChunk){
+        let p = new THREE.Vector3(...data.requestChunk.position);
+        sendChunk(client, p);
+      }
     });
 
     conn.on("close", function(){
@@ -209,6 +213,15 @@ var Server = function (world_, scene_) {
         other.conn.send({nameUpdate:{id: client.id, username: client.name}});
       }
     });
+  }
+
+  function sendChunk(client, p){
+    let chunk = world.chunkAt(p);
+    if (!chunk) return;
+    client.conn.send({chunk:{
+      position: chunk.getPosition().toArray(),
+      blocks: chunk.getBlocks(),
+    }});
   }
 
   function sendMessage(sender, messageText){
