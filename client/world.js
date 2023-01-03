@@ -9,6 +9,8 @@ var World = function (chunkSize_, renderRadius_) {
   // how far do you have to move from the focused chunk to change focus?
   var chunkRadius = 2;
 
+  var worldSize = {x: 0, y: 0, z: 0}
+
   // call this function to request a chunk from the server. If this
   // function is null, you are the server.
   var requestChunk = null;
@@ -175,6 +177,10 @@ var World = function (chunkSize_, renderRadius_) {
     });
   }
 
+  this.getWorldSize = function() {
+    return worldSize;
+  }
+
   // Read a blockball map file and create chunks based on the chunksize
   // TODO: validate input
   this.populateWorldFromMap = function (mapContents) {
@@ -184,6 +190,8 @@ var World = function (chunkSize_, renderRadius_) {
     var mapLenZ = map.length
     var mapLenY = map[0].length
     var mapLenX = map[0][0].length
+
+    worldSize = {x: mapLenX, y: mapLenY, z: mapLenZ}
 
     var chunkSizeInt = chunkSize.x
 

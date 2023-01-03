@@ -218,10 +218,20 @@ var Server = function (world_, scene_) {
   }
 
   function respawn(client){
-    // find a new position ?
-    let moveto = new THREE.Vector3(4,60,4);
+    // Valid spawn locations are stored in each chunk
+    // Pick an random point on the map
+    var randomX = Math.floor(Math.random()*world.getWorldSize().x)
+    var randomY = Math.floor(Math.random()*world.getWorldSize().y)
+    var randomZ = Math.floor(Math.random()*world.getWorldSize().z)
+    console.log("world size")
+    console.log(world.getWorldSize())
+    let spawnChunk = world.chunkAt(new THREE.Vector3(randomX,randomY,randomZ))
+    console.log("chhunk pos")
+    console.log(spawnChunk.getPosition())
+    var spawnLocation = spawnChunk.getRandomSpawnPosition()
+
     client.isTeleporting = true;
-    client.conn.send({moveTo:moveto.toArray()});
+    client.conn.send({moveTo:spawnLocation.toArray()});
   }
 
   function sendNameUpdateFor(client){
