@@ -63,6 +63,13 @@ var World = function (chunkSize_, renderRadius_) {
     return chunk.blockAt(p.clone().sub(chunk.getPosition()));
   }
 
+  this.setBlock = function(p, block){
+    let chunk = pos2chunk(p);
+    if (chunk && !chunk.isEmpty) {
+      chunk.setBlock(p.clone().sub(chunk.getPosition()), block);
+    }
+  }
+
   this.chunkAt = function (p) {
     return pos2chunk(p);
   }

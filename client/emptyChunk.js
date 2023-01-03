@@ -35,6 +35,8 @@ var EmptyChunk = function(position_, size_){
     return size;
   }
 
+  this.setBlock = function(v, block){}
+
   this.distanceTo = function(p){
     let above = this.size().sub(p); // if positive, outside
     let below = p.clone().sub(this.getPosition()).sub(this.size()); // if positive, outside

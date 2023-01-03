@@ -15,6 +15,10 @@ var Chunk = function (position_, blocks_, colors_) {
     return blocks[Math.floor(v.x)][Math.floor(v.y)][Math.floor(v.z)];
   }
 
+  this.setBlock = function(v, block){
+    blocks[Math.floor(v.x)][Math.floor(v.y)][Math.floor(v.z)] = block;
+  }
+
   this.noBlockAt = function(v){
     return !this.blockAt(v);
   }
@@ -229,6 +233,9 @@ var Chunk = function (position_, blocks_, colors_) {
       ){
         // add 2 to get player position
         p.setY(p.y + 2);
+
+
+
         return p;
       }
     }
