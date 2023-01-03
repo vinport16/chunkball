@@ -156,8 +156,8 @@ var Player = function (position_, world_) {
 
     let above = [];
     checkspots.forEach(function(spot) {
-      above.push(spot.clone().add(new THREE.Vector3(0, 0.75, 0))); // middle of player
-      above.push(spot.clone().add(new THREE.Vector3(0, 1.50, 0))); // top of player
+      above.push(spot.clone().add(new THREE.Vector3(0, 0.80, 0))); // ~ middle of player
+      above.push(spot.clone().add(new THREE.Vector3(0, 1.75, 0))); // top of player
     });
 
     checkspots = checkspots.concat(above);

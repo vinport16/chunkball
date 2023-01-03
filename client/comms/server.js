@@ -218,8 +218,7 @@ var Server = function (world_, scene_) {
   }
 
   function respawn(client){
-    // find a new position ?
-    let moveto = new THREE.Vector3(4,60,4);
+    let moveto = world.findVoid();
     client.isTeleporting = true;
     client.conn.send({moveTo:moveto.toArray()});
   }

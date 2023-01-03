@@ -163,6 +163,23 @@ var World = function (chunkSize_, renderRadius_) {
     });
   }
 
+  function randomChunk () {
+    let keylist = Object.keys(chunkMap);
+    return chunkMap[keylist[Math.floor(Math.random()*keylist.length)]];
+  }
+
+  this.findVoid = function () {
+    let chunk = randomChunk();
+    let p = chunk.findVoid();
+    while(!p){
+      chunk = randomChunk();
+      p = chunk.findVoid();
+      // I guess this will go forever if there are no blocks in the world,
+      // or in the worst case, because it's just random. TODO make this better ?
+    }
+    return p;
+  }
+
   this.draw = function (scene, player) {
     this.calculateFocusedChunk(player);
     if (!focusedChunk) return;

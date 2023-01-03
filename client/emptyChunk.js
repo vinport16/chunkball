@@ -49,6 +49,10 @@ var EmptyChunk = function(position_, size_){
     return Math.sqrt(sum);
   }
 
+  this.findVoid = function(){
+    return false;
+  }
+
 };
 
 EmptyChunk.prototype.constructor = EmptyChunk;

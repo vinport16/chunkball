@@ -11,8 +11,7 @@ var Chunk = function (position_, blocks_, colors_) {
   this.world = null;
 
   this.blockAt = function(v){
-    // will say no block if outside chunk
-
+    // will throw error if outside chunk
     return blocks[Math.floor(v.x)][Math.floor(v.y)][Math.floor(v.z)];
   }
 
@@ -204,6 +203,36 @@ var Chunk = function (position_, blocks_, colors_) {
     });
     let sum = dsquared.reduce(function (x, y) {return x + y;}, 0);
     return Math.sqrt(sum);
+  }
+
+  this.randomPosition = function(){
+    let size = this.size();
+    let p = new THREE.Vector3(
+      Math.random() * size.x,
+      Math.random() * size.y,
+      Math.random() * size.z,
+    );
+    p.add(position).floor().addScalar(0.5); // in center of block
+    return p;
+  }
+
+  // Returns position within chunk where a player can
+  // stand on a block and not collide with other blocks.
+  // Used for finding a random spawn location.
+  this.findVoid = function(){
+    let p = this.randomPosition();
+    for(let i = 0; i < 20; i++){
+      if(
+        this.world.blockAt(p) &&
+        this.world.noBlockAt(p.clone().setY(p.y+1)) && 
+        this.world.noBlockAt(p.clone().setY(p.y+2))
+      ){
+        // add 2 to get player position
+        p.setY(p.y + 2);
+        return p;
+      }
+    }
+    return false;
   }
 
 };
