@@ -9,7 +9,7 @@ var Chunk = function (position_, blocks_, colors_) {
 
   var blockUpdate = false;
 
-  var validSpawnLocations = null;
+  var validSpawnLocations = [];
 
   this.world = null;
 
@@ -32,9 +32,15 @@ var Chunk = function (position_, blocks_, colors_) {
   }
 
   this.getRandomSpawnPosition = function(){
+    if(validSpawnLocations == []){
+      validSpawnLocations = this.determineValidSpawnLocations()
+    }
+    if(validSpawnLocations.length == 0){
+      return null
+    }
     var spawnLocationIndex = Math.floor(Math.random()*(validSpawnLocations.length-1))
-    // console.log(spawnLocationIndex)
-    // console.log(validSpawnLocations)
+    console.log(spawnLocationIndex)
+    console.log(validSpawnLocations)
     return validSpawnLocations[spawnLocationIndex].clone()
   }
 

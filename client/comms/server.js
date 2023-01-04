@@ -219,14 +219,18 @@ var Server = function (world_, scene_) {
 
   function respawn(client){
     // Valid spawn locations are stored in each chunk
-    // Pick an random point on the map
-    var randomX = Math.floor(Math.random()*world.getWorldSize().x)
-    var randomY = Math.floor(Math.random()*world.getWorldSize().y)
-    var randomZ = Math.floor(Math.random()*world.getWorldSize().z)
+    let spawnChunk = world.getRandomChunk()
 
-    let spawnChunk = world.chunkAt(new THREE.Vector3(randomX,randomY,randomZ))
-
-    var spawnLocation = spawnChunk.getRandomSpawnPosition()
+    var spawnLocation = null
+    var attempt = 0
+    while (spawnLocation == null){
+      spawnLocation = spawnChunk.getRandomSpawnPosition()
+      attempt++
+      // Avoid infinate loop
+      if(attempt > 10){
+        alert("We can't find  a valid spawn location. Refresh the page.")
+      }
+    }
     
     console.log("absolute spawn pos")
     console.log(spawnChunk.getPosition().add(spawnLocation))

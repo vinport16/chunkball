@@ -165,6 +165,11 @@ var World = function (chunkSize_, renderRadius_) {
     });
   }
 
+  this.getRandomChunk = function() {
+    let keylist = Object.keys(chunkMap);
+    return chunkMap[keylist[Math.floor(Math.random()*keylist.length)]];
+  }
+
   this.draw = function (scene, player) {
     this.calculateFocusedChunk(player);
     if (!focusedChunk) return;
@@ -176,11 +181,7 @@ var World = function (chunkSize_, renderRadius_) {
       console.log(key);
     });
   }
-
-  this.getWorldSize = function() {
-    return worldSize;
-  }
-
+  
   // Read a blockball map file and create chunks based on the chunksize
   // TODO: validate input
   this.populateWorldFromMap = function (mapContents) {
