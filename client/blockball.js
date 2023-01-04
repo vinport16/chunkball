@@ -8,12 +8,14 @@ import {Server} from './comms/server.js';
 import {Client} from './comms/client.js';
 import {Channel} from './comms/channel.js';
 import {Chat} from './comms/chat.js'
+import {Leaderboard} from './comms/leaderboard.js'
 import {Setup} from './setup.js'
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
 var renderer, controls;
 
 var chat;
+var leaderboard;
 var setup = new Setup();
 var communication;
 var client;
@@ -45,6 +47,7 @@ setup.onReady(function () {
     client.setName(communication.getUsername());
     client.setColor(communication.getPlayerColor());
     chat = new Chat(channel[0]);
+    leaderboard = new Leaderboard(channel[0]);
 
   } else {
 
@@ -54,6 +57,7 @@ setup.onReady(function () {
     communication.onConnect(function (conn) {
       client.connectServer(conn, player);
       chat = new Chat(conn);
+      leaderboard = new Leaderboard(conn);
 
       world.setRequestChunkFunc(function(p){
         conn.send({requestChunk:{position:p.toArray()}});
@@ -74,14 +78,14 @@ var startTime = Date.now();
 
 function setPlayUI() {
   instructions.style.display = 'none';
-  leaderboard.style.display = '';
+  //leaderboard.style.display = '';
   blocker.style.display = 'none';
 }
 
 function setPauseUI() {
   blocker.style.display = 'block';
   instructions.style.display = '';
-  leaderboard.style.display = '';
+  //leaderboard.style.display = '';
 }
 
 player.onControlsLock(setPlayUI);
