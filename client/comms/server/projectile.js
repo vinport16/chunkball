@@ -49,6 +49,10 @@ var Projectile = function (pos, vel, r) {
     position = checkp;
   }
 
+  this.setExpireTime = function(t){
+    expires = t;
+  }
+
   this.expired = function(){
     return age >= expires;
   }

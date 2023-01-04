@@ -16,7 +16,7 @@ var Client = function (id_, conn_) {
   this.direction = new THREE.Quaternion();
   this.removed = false;
   this.isTeleporting = false;
-  this.loadout = new Loadout(Loadout.SCOUT);
+  this.loadout = new Loadout(Loadout.SCATTER);
 
 
   this.assailants = []; // other clients, or strings: ie "fell"
