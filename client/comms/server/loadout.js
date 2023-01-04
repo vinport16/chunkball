@@ -20,7 +20,7 @@ var Loadout = function (type_) {
       name: 'sniper',
       launchSpeed: 80,
       projectileRadius: 0.06,
-      reloadTime: 500,
+      reloadTime: 1000,
       maxMagazine: 50,
       launch: function(position, angle) {
         let velocity = angle.normalize().multiplyScalar(this.launchSpeed);
@@ -31,7 +31,7 @@ var Loadout = function (type_) {
       name: 'scatter',
       launchSpeed: 25,
       projectileRadius: 0.1,
-      reloadTime: 300,
+      reloadTime: 500,
       maxMagazine: 100,
       launch: function(position, angle){
         let velocity = angle.normalize().multiplyScalar(this.launchSpeed);
@@ -50,7 +50,7 @@ var Loadout = function (type_) {
       name: 'heavy',
       launchSpeed: 35,
       projectileRadius: 0.8,
-      reloadTime: 200,
+      reloadTime: 300,
       maxMagazine: 300,
       launch: function(position, angle){
         let velocity = angle.normalize().multiplyScalar(this.launchSpeed);

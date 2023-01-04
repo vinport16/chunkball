@@ -155,7 +155,7 @@ function init() {
         client.launch();
         break;
       case 88: //x, change class
-        player.changeClass();
+        client.changeLoadout();
         break;
       case 77: //m, change mode
         // ? what mode ?

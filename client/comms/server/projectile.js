@@ -1,5 +1,5 @@
 /*
-Projectile
+Projectile: server representation
 */
 var idcounter = 0;
 

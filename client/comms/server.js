@@ -16,7 +16,8 @@ var Client = function (id_, conn_) {
   this.direction = new THREE.Quaternion();
   this.removed = false;
   this.isTeleporting = false;
-  this.loadout = new Loadout(Loadout.SCATTER);
+  this.loadoutIDX = 0;
+  this.loadout = new Loadout(Loadout.SCOUT);
 
 
   this.assailants = []; // other clients, or strings: ie "fell"
@@ -81,6 +82,13 @@ var Server = function (world_, scene_) {
   var scene = scene_;
   var fallDepthLimit = -30; // if you fall off the world, respawn at y=-30
 
+  var loadouts = [
+    Loadout.SCOUT,
+    Loadout.SNIPER,
+    Loadout.SCATTER,
+    Loadout.HEAVY,
+  ];
+
   var clients = [];
   var projectiles = [];
 
@@ -122,6 +130,15 @@ var Server = function (world_, scene_) {
         client.color = data.updateColor;
         console.log("server", client.name, client.color);
         sendColorUpdateFor(client);
+      }
+      if(data.changeLoadout){
+        client.loadoutIDX++;
+        if(client.loadoutIDX >= loadouts.length){
+          client.loadoutIDX = 0;
+        }
+        client.loadout = new Loadout(client.loadoutIDX);
+        announceLoadout(client);
+        sendMessage(client, "loadout updated to: " + client.loadout.name);
       }
       if(data.message){
         sendMessage(client, data.message);
@@ -299,6 +316,16 @@ var Server = function (world_, scene_) {
     clients.forEach(function(client){
       client.conn.send({message:{from: sender.name, text: messageText}});
     });
+  }
+
+  function announceLoadout(client){
+    client.conn.send({loadoutUpdate:{
+      name: client.loadout.name,
+      reloadTime: client.loadout.reloadTime,
+      loadStatus: 0,
+      magazine: client.loadout.maxMagazine,
+      maxMagazine: client.loadout.maxMagazine,
+    }})
   }
 
   function announcePlayerLeft(client){

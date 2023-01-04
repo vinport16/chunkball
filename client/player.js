@@ -24,10 +24,11 @@ var Player = function (position_, world_) {
   var controls = null;
 
   var loadout = {
-    class: "scout",
+    name: "scout",
     reloadTime:100,
     loadStatus:100,
     magazine:300,
+    maxMagazine:300,
   };
 
   this.init = function(scene, camera_){
@@ -74,8 +75,8 @@ var Player = function (position_, world_) {
     canJump = false;
   }
 
-  this.setClass = function(c){
-    playerClass = c;
+  this.setLoadout = function(l){
+    loadout = l;
   }
 
   this.changeClass = function(){
