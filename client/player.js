@@ -170,9 +170,6 @@ var Player = function (position_, world_) {
     return false;
   }
 
-  var fpnc = false;
-  var opnc = false;
-
   this.nextPosition = function(position, move) {
 
     // calculate step size: we want about 5 steps
