@@ -229,9 +229,13 @@ var Server = function (world_, scene_) {
     console.log("chhunk pos")
     console.log(spawnChunk.getPosition())
     var spawnLocation = spawnChunk.getRandomSpawnPosition()
+    console.log("chunk spawn locatiion: ")
+    console.log(spawnLocation)
 
+    console.log("absolute spawn pos")
+    console.log(spawnChunk.getPosition().add(spawnLocation))
     client.isTeleporting = true;
-    client.conn.send({moveTo:spawnLocation.toArray()});
+    client.conn.send({moveTo:spawnChunk.getPosition().add(spawnLocation).toArray()});
   }
 
   function sendNameUpdateFor(client){

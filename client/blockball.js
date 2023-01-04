@@ -20,7 +20,7 @@ var client;
 var server;
 var world = new World(10, 6);
 
-var player = new Player(new THREE.Vector3(4, 60, 4), world);
+var player = new Player(new THREE.Vector3(2, 60, 4), world);
 player.init(scene, camera)
 
 setup.onReady(function () {
@@ -98,7 +98,7 @@ function init() {
   let a = new Agent(scene);
   a.setName("test player");
   a.draw();
-  a.updatePosition(new THREE.Vector3(4.5, 4.5, 1.5), new THREE.Quaternion(0.01,0.01,1,0.01));
+  a.updatePosition(new THREE.Vector3(2, 4, 2), new THREE.Quaternion(0.01,0.01,1,0.01));
 
   add_crosshair(camera);
 

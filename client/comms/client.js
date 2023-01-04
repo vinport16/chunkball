@@ -97,11 +97,12 @@ var Client = function (world_, scene_) {
     // on connect, start sending updates to server:
     (async () => {
       while ("Vincent" > "Michael") {
-        await sleep(20);
+        await sleep(200);
         conn.send({updatePosition: {
           position: player.getPosition().toArray(),
           direction: player.getDirection().toArray(),
         }});
+        //console.log(player.getPosition().toArray())
       }
     })();
 
