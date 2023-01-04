@@ -19,6 +19,8 @@
   <a href="../client/index.html" id="hostlink">host a game</a><br>
   <a href="../client/index.html" id="joinlink">join a game</a><br>
   <br>
+  Note: game host must keep browser tab active, otherwise the game will run extrememly slowly.<br>
+  <br>
   <a href="../mapEditor/index.html">Create or Edit a Map</a><br>
 </body>
 
@@ -49,8 +51,20 @@
   function setGameID() {
     servingURL.searchParams.set('serving', gameidinput.value);
     joiningURL.searchParams.set('joining', gameidinput.value);
-    document.getElementById("hostlink").href = servingURL;
-    document.getElementById("joinlink").href = joiningURL;
+    
+    let hostlnk = document.getElementById("hostlink");
+    let joinlnk = document.getElementById("joinlink")
+    
+    if(gameidinput.value != ""){
+      hostlnk.innerText = "host game: " + gameidinput.value;
+      joinlnk.innerText = "join game: " + gameidinput.value;
+    }else{
+      hostlnk.innerText = "";
+      joinlnk.innerText = "";
+    }
+    
+    hostlnk.href = servingURL;
+    joinlnk.href = joiningURL;
   };
   gameidinput.onchange = setGameID;
 
