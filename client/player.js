@@ -171,24 +171,6 @@ var Player = function (position_, world_) {
   }
 
   this.nextPosition = function(position, move) {
-    // if horizontal movement is small, allow only vertical movement
-    //if(Math.abs(move.x) + Math.abs(move.z) < 0.001){
-    //    let next = position.clone();
-    //    next.y += move.y;
-    //    return next;
-    //}
-
-    // slightlyHigher can also be slightly lower, depending on vertical direction
-    let slightlyHigher = position.clone();
-    slightlyHigher.y += Math.sign(move.y) / 0.5;
-
-    // if you are moving up or down, and you will be colliding with a block, allow
-    // vertical movement only
-    //if(this.isPositionColliding(position) || this.isPositionColliding(slightlyHigher)){
-    //    let next = position.clone();
-    //    next.y += move.y;
-    //    return next;
-    //}
 
     // calculate step size: we want about 5 steps
     let stepsize = move.length() / (1 + Math.floor(move.length() / 0.5));
@@ -219,6 +201,12 @@ var Player = function (position_, world_) {
         if (this.isPositionColliding(fauxPosition)) {
           fauxPosition.add(move.clone().normalize().multiplyScalar(tinystep * direction));
         }
+
+        if (this.isPositionColliding(fauxPosition)) {
+          // give up and revert to original position
+          fauxPosition = position.clone();
+        }
+
         break;
       }
     }
@@ -227,11 +215,11 @@ var Player = function (position_, world_) {
       // determine if you can go more in the x or y or z direction
 
       let xtester = fauxPosition.clone();
-      xtester.x += Math.sign(move.x) / 10;
+      xtester.x += Math.sign(move.x) / 100;
       let ytester = fauxPosition.clone();
-      ytester.y += Math.sign(move.y) / 10;
+      ytester.y += Math.sign(move.y) / 100;
       let ztester = fauxPosition.clone();
-      ztester.z += Math.sign(move.z) / 10;
+      ztester.z += Math.sign(move.z) / 100;
 
       let newMove = move.clone().sub(
         fauxPosition.clone().sub(position)
@@ -254,15 +242,7 @@ var Player = function (position_, world_) {
 
   this.animate = function() {
     var time = performance.now();
-    if (controls.getObject().position.y <= 2) {
-      if (!playerJustFell) {
-        playerJustFell = true;
-        velocity.y = 0;
-        // controls.getObject().position.y = 1000;
-        // controls.getObject().position.z = -500;
-        //socket.emit("playerFell")
-      }
-    }
+
     if (controls.isLocked === true) {
 
       var originalPosition = controls.getObject().position.clone();
@@ -311,17 +291,8 @@ var Player = function (position_, world_) {
 
       // what was the actual delta in position? this is the actual velocity
       velocity.y = (newPos.y - originalPosition.y) / delta;
-
-      // update reload status and bar
-      //loadStatus += (time - prevTime) / reloadTime;
-      //loadStatus = Math.min(loadStatus, 1);
-      //document.getElementById('status-bar').style.width = (loadStatus * 100) + "%";
-
-      // if ( controls.getObject().position.y < 10 ) {
-      //     velocity.y = 0;
-      //     respawn();
-      //     canJump = true;
-      // }
+      // TODO: do this in other dimensions. NOTE: velocity is rotated in direction of
+      // camera, must rotate back to world coordinates
 
     } else {
       velocity.set(0, 0, 0);

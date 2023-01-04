@@ -11,6 +11,7 @@ var Client = function (world_, scene_) {
   var scene = scene_;
 
   var name = "username";
+  var color = "#AA0000";
 
   var connection;
   var agents = {};
@@ -28,6 +29,7 @@ var Client = function (world_, scene_) {
     connection = conn;
 
     connection.send({updateName:name});
+    connection.send({updateColor:color});
 
     conn.on("data", function(data){
       if(data.newPlayer){
@@ -35,8 +37,10 @@ var Client = function (world_, scene_) {
         let agent = new Agent(scene);
         agent.draw();
         agent.setName(npd.username);
+        agent.updateColor(npd.color);
         agent.updateNameTag();
         agents[npd.id] = agent;
+        console.log("newplayer", agent.getName(), npd.color);
       }
       if(data.newProjectile){
         let npd = data.newProjectile;
@@ -71,6 +75,11 @@ var Client = function (world_, scene_) {
         let update = data.nameUpdate;
         agents[update.id].setName(update.username);
         agents[update.id].updateNameTag();
+      }
+      if(data.colorUpdate){
+        let update = data.colorUpdate;
+        agents[update.id].updateColor(update.color);
+        console.log("client color set", update.id, update.color);
       }
       if(data.moveTo){
         player.setPosition(new THREE.Vector3(...data.moveTo));
@@ -115,7 +124,10 @@ var Client = function (world_, scene_) {
   }
 
   this.setColor = function(c){
-    connection.send({updateColor:c});
+    color = c;
+    if(connection){
+      connection.send({updateColor:c});
+    }
   }
 
   this.launch = function(){

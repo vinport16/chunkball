@@ -30,7 +30,6 @@ setup.onReady(function () {
   communication = new Communication();
 
   client = new Client(world, scene);
-  client.setName(communication.getUsername());
 
   if (communication.isServing()) {
 
@@ -46,10 +45,14 @@ setup.onReady(function () {
     client.connectServer(channel[0], player);
     server.addClient(channel[1]);
     client.setName(communication.getUsername());
+    client.setColor(communication.getPlayerColor());
     chat = new Chat(channel[0]);
     leaderboard = new Leaderboard(channel[0]);
 
   } else {
+
+    client.setName(communication.getUsername());
+    client.setColor(communication.getPlayerColor());
 
     communication.onConnect(function (conn) {
       client.connectServer(conn, player);

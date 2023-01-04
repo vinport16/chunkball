@@ -11,6 +11,7 @@ var Client = function (id_, conn_) {
   this.id = id_;
   this.conn = conn_;
   this.name = "username";
+  this.color = "#AA0000";
   this.position = new THREE.Vector3();
   this.direction = new THREE.Quaternion();
   this.removed = false;
@@ -89,8 +90,13 @@ var Server = function (world_, scene_) {
       if(data.updateName){
         client.name = data.updateName;
         sendNameUpdateFor(client);
-        client.sendAnnouncement("name changed to "+data.updateName);
+        client.sendAnnouncement("name set to "+data.updateName);
         updateLeaderboard();
+      }
+      if(data.updateColor){
+        client.color = data.updateColor;
+        console.log("server", client.name, client.color);
+        sendColorUpdateFor(client);
       }
       if(data.message){
         sendMessage(client, data.message);
@@ -142,8 +148,8 @@ var Server = function (world_, scene_) {
   this.introduceNewPlayer = function(client){
     clients.forEach(function(other){
       if(other !== client){
-        other.conn.send({newPlayer:{id: client.id, username: client.name}});
-        client.conn.send({newPlayer:{id: other.id, username: other.name}});
+        other.conn.send({newPlayer:{id: client.id, username: client.name, color: client.color}});
+        client.conn.send({newPlayer:{id: other.id, username: other.name, color: other.color}});
       }
     });
   }
@@ -242,6 +248,14 @@ var Server = function (world_, scene_) {
     clients.forEach(function(other){
       if(other !== client){
         other.conn.send({nameUpdate:{id: client.id, username: client.name}});
+      }
+    });
+  }
+
+  function sendColorUpdateFor(client){
+    clients.forEach(function(other){
+      if(other !== client){
+        other.conn.send({colorUpdate:{id: client.id, color: client.color}});
       }
     });
   }

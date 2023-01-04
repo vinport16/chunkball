@@ -83,6 +83,10 @@ var Communication = function () {
     return params.username;
   }
 
+  this.getPlayerColor = function(){
+    return params.color || "#AA0000";
+  }
+
 
 };
 
