@@ -223,15 +223,11 @@ var Server = function (world_, scene_) {
     var randomX = Math.floor(Math.random()*world.getWorldSize().x)
     var randomY = Math.floor(Math.random()*world.getWorldSize().y)
     var randomZ = Math.floor(Math.random()*world.getWorldSize().z)
-    console.log("world size")
-    console.log(world.getWorldSize())
-    let spawnChunk = world.chunkAt(new THREE.Vector3(randomX,randomY,randomZ))
-    console.log("chhunk pos")
-    console.log(spawnChunk.getPosition())
-    var spawnLocation = spawnChunk.getRandomSpawnPosition()
-    console.log("chunk spawn locatiion: ")
-    console.log(spawnLocation)
 
+    let spawnChunk = world.chunkAt(new THREE.Vector3(randomX,randomY,randomZ))
+
+    var spawnLocation = spawnChunk.getRandomSpawnPosition()
+    
     console.log("absolute spawn pos")
     console.log(spawnChunk.getPosition().add(spawnLocation))
     client.isTeleporting = true;

@@ -33,8 +33,8 @@ var Chunk = function (position_, blocks_, colors_) {
 
   this.getRandomSpawnPosition = function(){
     var spawnLocationIndex = Math.floor(Math.random()*(validSpawnLocations.length-1))
-    console.log(spawnLocationIndex)
-    console.log(validSpawnLocations)
+    // console.log(spawnLocationIndex)
+    // console.log(validSpawnLocations)
     return validSpawnLocations[spawnLocationIndex].clone()
   }
 
@@ -217,8 +217,6 @@ var Chunk = function (position_, blocks_, colors_) {
   }
 
   this.determineValidSpawnLocations = function(){
-    console.log("blocks")
-    console.log(blocks)
     validSpawnLocations = []
     for (let z = 0; z < blocks.length; z++) {
       for (let y = 0; y < blocks[0].length; y++) {
@@ -231,12 +229,9 @@ var Chunk = function (position_, blocks_, colors_) {
         }
       }
     }
-    console.log("valiid spots: ")
-    console.log(validSpawnLocations)
     return validSpawnLocations;
   }
   validSpawnLocations = this.determineValidSpawnLocations();
-
 };
 
 Chunk.prototype.constructor = Chunk;
