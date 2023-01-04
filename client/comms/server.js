@@ -18,6 +18,10 @@ var Client = function (id_, conn_) {
   this.isTeleporting = false;
   this.loadout = new Loadout(Loadout.SCOUT);
 
+
+  this.assailants = []; // other clients, or strings: ie "fell"
+  this.victims = []; // other clients
+
   this.sendAnnouncement = function(text){
     this.conn.send({message:{from:'server', text:text}});
   }
@@ -68,6 +72,7 @@ var Server = function (world_, scene_) {
     clients.push(client);
 
     this.introduceNewPlayer(client);
+    updateLeaderboard();
 
     conn.on("data", function(data){
       if(data.updatePosition){
@@ -76,7 +81,9 @@ var Server = function (world_, scene_) {
           client.direction = new THREE.Quaternion(...data.updatePosition.direction);
           if(client.position.y < fallDepthLimit){
             client.sendAnnouncement("you fell!");
+            client.assailants.push("fell");
             respawn(client);
+            updateLeaderboard();
           }
         }
       }
@@ -84,6 +91,7 @@ var Server = function (world_, scene_) {
         client.name = data.updateName;
         sendNameUpdateFor(client);
         client.sendAnnouncement("name set to "+data.updateName);
+        updateLeaderboard();
       }
       if(data.updateColor){
         client.color = data.updateColor;
@@ -111,6 +119,7 @@ var Server = function (world_, scene_) {
       announcePlayerLeft(client);
       clients = clients.filter(c => c != client);
       client.removed = true;
+      updateLeaderboard();
     });
   }
 
@@ -181,7 +190,12 @@ var Server = function (world_, scene_) {
         if(collision != world){
           // collision is a client
           respawn(collision);
+
+          collision.assailants.push(projectile.owner);
+          projectile.owner.victims.push(collision);
+
           collision.conn.send({youWereHit:{by:projectile.owner.id}});
+          updateLeaderboard();
         }
       });
     }else{
@@ -268,6 +282,22 @@ var Server = function (world_, scene_) {
         other.sendAnnouncement(client.name + " left the game");
         other.conn.send({playerLeft:{id: client.id}});
       }
+    });
+  }
+
+  function updateLeaderboard(){
+    let list = clients.map(function(client){
+      return {
+        name: client.name,
+        id: client.id,
+        assailants: client.assailants.map(a => a.name || a),
+        victims: client.victims.map(v => v.name || v),
+      };
+    });
+    let lb = {list: list};
+    clients.forEach(function(client){
+      lb.myId = client.id; // each client can check their ID here
+      client.conn.send({leaderboard:lb});
     });
   }
 
