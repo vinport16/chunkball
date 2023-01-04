@@ -3,10 +3,13 @@ var Chunk = function (position_, blocks_, colors_) {
   var position = position_.clone().floor();
   // assume blocks is a perfect X by Y by Z prism - validate this in future? TODO
   var blocks = blocks_;
+
   var colors = colors_;
   var graphicsObject = null;
 
   var blockUpdate = false;
+
+  var validSpawnLocations = [];
 
   this.world = null;
 
@@ -26,6 +29,19 @@ var Chunk = function (position_, blocks_, colors_) {
 
   this.getColors = function(){
     return colors;
+  }
+
+  this.getRandomSpawnPosition = function(){
+    if(validSpawnLocations == []){
+      validSpawnLocations = this.determineValidSpawnLocations()
+    }
+    if(validSpawnLocations.length == 0){
+      return null
+    }
+    var spawnLocationIndex = Math.floor(Math.random()*(validSpawnLocations.length-1))
+    console.log(spawnLocationIndex)
+    console.log(validSpawnLocations)
+    return validSpawnLocations[spawnLocationIndex].clone()
   }
 
   function makeSides(v,p){
@@ -206,6 +222,22 @@ var Chunk = function (position_, blocks_, colors_) {
     return Math.sqrt(sum);
   }
 
+  this.determineValidSpawnLocations = function(){
+    validSpawnLocations = []
+    for (let z = 0; z < blocks.length; z++) {
+      for (let y = 0; y < blocks[0].length; y++) {
+        for (let x = 0; x < blocks[0][0].length; x++) {
+          if(blocks[z][y][x] != null){
+            if(blocks[z][y][x] > 0 && (blocks[z][y+1] ==  null || blocks[z][y+1][x] == 0) && (blocks[z][y+2] == null || blocks[z][y+2][x] == 0)){
+              validSpawnLocations.push(new THREE.Vector3(z+0.5, y+2.51, x+0.5))
+            }
+          }
+        }
+      }
+    }
+    return validSpawnLocations;
+  }
+  validSpawnLocations = this.determineValidSpawnLocations();
 };
 
 Chunk.prototype.constructor = Chunk;

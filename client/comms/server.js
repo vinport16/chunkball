@@ -263,10 +263,24 @@ var Server = function (world_, scene_) {
   }
 
   function respawn(client){
-    // find a new position ?
-    let moveto = new THREE.Vector3(4,60,4);
+    // Valid spawn locations are stored in each chunk
+    let spawnChunk = world.getRandomChunk()
+
+    var spawnLocation = null
+    var attempt = 0
+    while (spawnLocation == null){
+      spawnLocation = spawnChunk.getRandomSpawnPosition()
+      attempt++
+      // Avoid infinate loop
+      if(attempt > 10){
+        alert("We can't find  a valid spawn location. Refresh the page.")
+      }
+    }
+    
+    console.log("absolute spawn pos")
+    console.log(spawnChunk.getPosition().add(spawnLocation))
     client.isTeleporting = true;
-    client.conn.send({moveTo:moveto.toArray()});
+    client.conn.send({moveTo:spawnChunk.getPosition().add(spawnLocation).toArray()});
   }
 
   function sendNameUpdateFor(client){

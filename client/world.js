@@ -163,6 +163,11 @@ var World = function (chunkSize_, renderRadius_) {
     });
   }
 
+  this.getRandomChunk = function() {
+    let keylist = Object.keys(chunkMap);
+    return chunkMap[keylist[Math.floor(Math.random()*keylist.length)]];
+  }
+
   this.draw = function (scene, player) {
     this.calculateFocusedChunk(player);
     if (!focusedChunk) return;
