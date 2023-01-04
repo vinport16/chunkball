@@ -13,6 +13,7 @@
 <body>
   <h1>chunkball</h1>
   Username: <input type="text" id="playername" /><br>
+  Color: <input type="color" id="playercolor" /><br>
   Game ID: <input type="text" id="gamecode" /><br>
   <hr>
   <a href="../client/index.html" id="hostlink">host a game</a><br>
@@ -35,6 +36,15 @@
   };
   nameinput.onchange = setUserName;
 
+  var colorinput = document.getElementById('playercolor');
+  function setColor() {
+    servingURL.searchParams.set('color', colorinput.value);
+    joiningURL.searchParams.set('color', colorinput.value);
+    document.getElementById("hostlink").href = servingURL;
+    document.getElementById("joinlink").href = joiningURL;
+  }
+  colorinput.onchange = setColor;
+
   var gameidinput = document.getElementById('gamecode');
   function setGameID() {
     servingURL.searchParams.set('serving', gameidinput.value);
@@ -45,6 +55,7 @@
   gameidinput.onchange = setGameID;
 
   setGameID();
+  setColor();
   setUserName();
 
 </script>
