@@ -32,11 +32,12 @@ body {
 }
 
 #leaderboard table {
-  border-collapse: collapse;
-  border-spacing: 0px;
+  border-collapse: separate;
+  border-spacing: 0 3px;
 }
 
 #leaderboard td {
+  padding: 5px;
   border: 0px 1px;
   border-style: none;
   background-color: rgba(0, 0, 0, 0.2);
