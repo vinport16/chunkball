@@ -264,16 +264,13 @@ var Server = function (world_, scene_) {
 
   function respawn(client){
     // Valid spawn locations are stored in each chunk
-    let spawnChunk = world.getRandomChunk()
-
+    //check if spawn chunk is valid
+    var spawnChunk = null
     var spawnLocation = null
-    var attempt = 0
     while (spawnLocation == null){
-      spawnLocation = spawnChunk.getRandomSpawnPosition()
-      attempt++
-      // Avoid infinate loop
-      if(attempt > 10){
-        alert("We can't find  a valid spawn location. Refresh the page.")
+      spawnChunk = world.getRandomChunk()
+      if (spawnChunk != null){
+        spawnLocation = spawnChunk.getRandomSpawnPosition()
       }
     }
     
