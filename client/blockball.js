@@ -196,16 +196,7 @@ function init() {
 
 
   var light = new THREE.DirectionalLight(0xffffff, 1);
-  light.castShadow = true;
-  light.shadowCameraVisible = true;
-  light.shadow.camera.near = 100;
-  light.shadow.camera.far = 200;
-  light.shadow.camera.left = -20; // CHANGED
-  light.shadow.camera.right = 20; // CHANGED
-  light.shadow.camera.top = 20; // CHANGED
-  light.shadow.camera.bottom = -20; // CHANGED
-
-  light.position.set(-60, 200, 100); // CHANGED
+  light.position.set(-60, 200, 100);
   scene.add(light);
   //
   renderer = new THREE.WebGLRenderer({
