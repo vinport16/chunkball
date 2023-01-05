@@ -104,9 +104,6 @@ var Server = function (world_, scene_) {
 
     clients.push(client);
 
-    this.introduceNewPlayer(client);
-    updateLeaderboard();
-
     conn.on("data", function(data){
       if(data.updatePosition){
         if(!client.isTeleporting){
@@ -161,6 +158,10 @@ var Server = function (world_, scene_) {
       client.removed = true;
       updateLeaderboard();
     });
+
+    this.introduceNewPlayer(client);
+    updateLeaderboard();
+    respawn(client);
   }
 
   this.sendUpdates = function(){
