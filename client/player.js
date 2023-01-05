@@ -16,7 +16,6 @@ var Player = function (position_, world_) {
   var direction = new THREE.Vector3();
   this.color = new THREE.Color();
   var playerJustFell = false;
-  var playerClass = "scout";
 
   var prevTime = performance.now();
 
@@ -77,17 +76,6 @@ var Player = function (position_, world_) {
 
   this.setLoadout = function(l){
     loadout = l;
-  }
-
-  this.changeClass = function(){
-    // shuffle thru classes
-    if (playerClass == "scout") {
-      //socket.emit("change class", "sniper");
-    } else if (playerClass == "sniper") {
-      //socket.emit("change class", "heavy");
-    } else if (playerClass == "heavy") {
-      //socket.emit("change class", "scout");
-    }
   }
 
   this.isLocked = function(){
