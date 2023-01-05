@@ -231,7 +231,7 @@ var Chunk = function (position_, blocks_, colors_) {
     for (let z = 0; z < blocks.length; z++) {
       for (let y = 0; y < blocks[0].length; y++) {
         for (let x = 0; x < blocks[0][0].length; x++) {
-          if(blocks[z][y][x] != null && blocks[z][y][x] > 0){
+          if(blocks[z][y][x]){
             if(blocks[z][y+1] == null){
               // Current block is in the top row of the chunk. Need to check two blocks above outside the chunk
               if(this.world.noBlockAt(this.getPosition().add(new THREE.Vector3(z,y+1,x))) && this.world.noBlockAt(this.getPosition().add(new THREE.Vector3(z,y+2,x)))){
@@ -250,7 +250,6 @@ var Chunk = function (position_, blocks_, colors_) {
         }
       }
     }
-    console.log(validSpawnLocations)
     return validSpawnLocations;
   }
 };
