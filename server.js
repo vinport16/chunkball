@@ -9,6 +9,7 @@ app.use('/mapEditor', express.static('mapEditor'));
 app.use('/maps', express.static('maps'));
 app.use('/start', express.static('start'));
 
+app.use('/favicon.ico', express.static('favicon.ico'));
 app.get('/', (req, res, next) => res.redirect('/start'));
 console.log("created index");
 

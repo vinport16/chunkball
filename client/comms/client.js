@@ -81,6 +81,10 @@ var Client = function (world_, scene_) {
         agents[update.id].updateColor(update.color);
         console.log("client color set", update.id, update.color);
       }
+      if(data.loadoutUpdate){
+        let l = data.loadoutUpdate;
+        player.setLoadout(l);
+      }
       if(data.moveTo){
         player.setPosition(new THREE.Vector3(...data.moveTo));
         conn.send({doneMovingTo:player.getPosition().toArray()});
@@ -128,6 +132,10 @@ var Client = function (world_, scene_) {
     if(connection){
       connection.send({updateColor:c});
     }
+  }
+
+  this.changeLoadout = function(){
+    connection.send({changeLoadout:true});
   }
 
   this.launch = function(){

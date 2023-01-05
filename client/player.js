@@ -16,7 +16,6 @@ var Player = function (position_, world_) {
   var direction = new THREE.Vector3();
   this.color = new THREE.Color();
   var playerJustFell = false;
-  var playerClass = "scout";
 
   var prevTime = performance.now();
 
@@ -24,10 +23,11 @@ var Player = function (position_, world_) {
   var controls = null;
 
   var loadout = {
-    class: "scout",
+    name: "scout",
     reloadTime:100,
     loadStatus:100,
     magazine:300,
+    maxMagazine:300,
   };
 
   this.init = function(scene, camera_){
@@ -74,19 +74,8 @@ var Player = function (position_, world_) {
     canJump = false;
   }
 
-  this.setClass = function(c){
-    playerClass = c;
-  }
-
-  this.changeClass = function(){
-    // shuffle thru classes
-    if (playerClass == "scout") {
-      //socket.emit("change class", "sniper");
-    } else if (playerClass == "sniper") {
-      //socket.emit("change class", "heavy");
-    } else if (playerClass == "heavy") {
-      //socket.emit("change class", "scout");
-    }
+  this.setLoadout = function(l){
+    loadout = l;
   }
 
   this.isLocked = function(){

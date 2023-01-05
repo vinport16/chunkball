@@ -16,6 +16,7 @@ var Client = function (id_, conn_) {
   this.direction = new THREE.Quaternion();
   this.removed = false;
   this.isTeleporting = false;
+  this.loadoutIDX = 0;
   this.loadout = new Loadout(Loadout.SCOUT);
 
 
@@ -81,6 +82,13 @@ var Server = function (world_, scene_) {
   var scene = scene_;
   var fallDepthLimit = -30; // if you fall off the world, respawn at y=-30
 
+  var loadouts = [
+    Loadout.SCOUT,
+    Loadout.SNIPER,
+    Loadout.SCATTER,
+    Loadout.HEAVY,
+  ];
+
   var clients = [];
   var projectiles = [];
 
@@ -122,6 +130,15 @@ var Server = function (world_, scene_) {
         client.color = data.updateColor;
         console.log("server", client.name, client.color);
         sendColorUpdateFor(client);
+      }
+      if(data.changeLoadout){
+        client.loadoutIDX++;
+        if(client.loadoutIDX >= loadouts.length){
+          client.loadoutIDX = 0;
+        }
+        client.loadout = new Loadout(client.loadoutIDX);
+        announceLoadout(client);
+        sendMessage(client, "loadout updated to: " + client.loadout.name);
       }
       if(data.message){
         sendMessage(client, data.message);
@@ -234,11 +251,32 @@ var Server = function (world_, scene_) {
 
   function moveProjectiles10ms(){
     projectiles.forEach(function(projectile){
-      projectile.step10ms();
-      let collisions = detectCollisions(projectile);
-      if(collisions.length != 0 || projectile.expired()){
-        handleProjCollision(projectile, collisions);
+      let op = projectile.getPosition();
+      let np = projectile.nextPosition(10);
+      let direction = np.clone().sub(op).normalize();
+      let delta = np.distanceTo(op);
+
+      let numSteps = Math.ceil(delta/(projectile.getRadius() * 1.8));
+      let p = op.clone();
+
+      for(let step = 1; step <= numSteps; step++){
+        let oldp = p.clone();
+        p.add(direction.clone().multiplyScalar(delta/numSteps));
+        projectile.setPosition(p);
+        let collisions = detectCollisions(projectile);
+        if(collisions.length != 0 || projectile.expired()){
+          handleProjCollision(projectile, collisions);
+          break;
+        }
       }
+      
+      if(!projectile.expired()){
+        // reset
+        projectile.setPosition(op);
+        // allow projectile to step TODO: change how this works?
+        projectile.step(10);
+      }
+      
     });
 
   }
@@ -310,6 +348,16 @@ var Server = function (world_, scene_) {
     clients.forEach(function(client){
       client.conn.send({message:{from: sender.name, text: messageText}});
     });
+  }
+
+  function announceLoadout(client){
+    client.conn.send({loadoutUpdate:{
+      name: client.loadout.name,
+      reloadTime: client.loadout.reloadTime,
+      loadStatus: 0,
+      magazine: client.loadout.maxMagazine,
+      maxMagazine: client.loadout.maxMagazine,
+    }})
   }
 
   function announcePlayerLeft(client){
