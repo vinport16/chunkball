@@ -43,8 +43,6 @@ var Chunk = function (position_, blocks_, colors_) {
       return null
     }
     var spawnLocationIndex = Math.floor(Math.random()*(validSpawnLocations.length-1))
-    console.log(spawnLocationIndex)
-    console.log(validSpawnLocations)
     return validSpawnLocations[spawnLocationIndex].clone()
   }
 

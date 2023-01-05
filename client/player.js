@@ -107,7 +107,7 @@ var Player = function (position_, world_) {
   this.setPosition = function(p){
     controls.getObject().position.setX(p.x);
     controls.getObject().position.setY(p.y);
-    controls.getObject().position.setZ(p.x);
+    controls.getObject().position.setZ(p.z);
   }
 
   this.isPositionColliding = function(position){

@@ -128,7 +128,6 @@ var Server = function (world_, scene_) {
       }
       if(data.updateColor){
         client.color = data.updateColor;
-        console.log("server", client.name, client.color);
         sendColorUpdateFor(client);
       }
       if(data.changeLoadout){
@@ -157,7 +156,6 @@ var Server = function (world_, scene_) {
     });
 
     conn.on("close", function(){
-      console.log(client.name +" just left");
       announcePlayerLeft(client);
       clients = clients.filter(c => c != client);
       client.removed = true;
@@ -312,8 +310,6 @@ var Server = function (world_, scene_) {
       }
     }
     
-    console.log("absolute spawn pos")
-    console.log(spawnChunk.getPosition().add(spawnLocation))
     client.isTeleporting = true;
     client.conn.send({moveTo:spawnChunk.getPosition().add(spawnLocation).toArray()});
   }
