@@ -10,6 +10,7 @@ var Chunk = function (position_, blocks_, colors_) {
   var blockUpdate = false;
 
   var validSpawnLocations = [];
+  var needToFindSpawnLocations = true
 
   this.world = null;
 
@@ -33,8 +34,9 @@ var Chunk = function (position_, blocks_, colors_) {
 
   this.getRandomSpawnPosition = function(){
     // If this is the first call for this chunk, populate the valid spots
-    if(validSpawnLocations.length == 0){
+    if(needToFindSpawnLocations){
       validSpawnLocations = this.determineValidSpawnLocations()
+      needToFindSpawnLocations = false
     }
     // If there are still zero valid spots, chunk is either 100% filled or empty
     if(validSpawnLocations.length == 0){
