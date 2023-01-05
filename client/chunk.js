@@ -32,9 +32,11 @@ var Chunk = function (position_, blocks_, colors_) {
   }
 
   this.getRandomSpawnPosition = function(){
-    if(validSpawnLocations == []){
+    // If this is the first call for this chunk, populate the valid spots
+    if(validSpawnLocations.length == 0){
       validSpawnLocations = this.determineValidSpawnLocations()
     }
+    // If there are still zero valid spots, chunk is either 100% filled or empty
     if(validSpawnLocations.length == 0){
       return null
     }
@@ -227,17 +229,28 @@ var Chunk = function (position_, blocks_, colors_) {
     for (let z = 0; z < blocks.length; z++) {
       for (let y = 0; y < blocks[0].length; y++) {
         for (let x = 0; x < blocks[0][0].length; x++) {
-          if(blocks[z][y][x] != null){
-            if(blocks[z][y][x] > 0 && (blocks[z][y+1] ==  null || blocks[z][y+1][x] == 0) && (blocks[z][y+2] == null || blocks[z][y+2][x] == 0)){
+          if(blocks[z][y][x] != null && blocks[z][y][x] > 0){
+            if(blocks[z][y+1] == null){
+              // Current block is in the top row of the chunk. Need to check two blocks above outside the chunk
+              if(this.world.noBlockAt(this.getPosition().add(new THREE.Vector3(z,y+1,x))) && this.world.noBlockAt(this.getPosition().add(new THREE.Vector3(z,y+2,x)))){
+                validSpawnLocations.push(new THREE.Vector3(z+0.5, y+2.51, x+0.5))
+              }
+            } else if (blocks[z][y+2] == null){
+              // current block is in the second top row of the chunk. Need to check one row above it in the chunk, and one outside the chunk
+              if (blocks[z][y+1][x] == 0 && this.world.noBlockAt(this.getPosition().add(new THREE.Vector3(z,y+2,x)))){
+                validSpawnLocations.push(new THREE.Vector3(z+0.5, y+2.51, x+0.5))
+              }
+            } else if (blocks[z][y+1][x] == 0 && blocks[z][y+2][x] == 0){
+              // Current block is below the top two levels of the chunk. Check the two blocks above it in the chunk.
               validSpawnLocations.push(new THREE.Vector3(z+0.5, y+2.51, x+0.5))
             }
           }
         }
       }
     }
+    console.log(validSpawnLocations)
     return validSpawnLocations;
   }
-  validSpawnLocations = this.determineValidSpawnLocations();
 };
 
 Chunk.prototype.constructor = Chunk;
