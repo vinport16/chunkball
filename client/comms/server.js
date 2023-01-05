@@ -251,11 +251,32 @@ var Server = function (world_, scene_) {
 
   function moveProjectiles10ms(){
     projectiles.forEach(function(projectile){
-      projectile.step10ms();
-      let collisions = detectCollisions(projectile);
-      if(collisions.length != 0 || projectile.expired()){
-        handleProjCollision(projectile, collisions);
+      let op = projectile.getPosition();
+      let np = projectile.nextPosition(10);
+      let direction = np.clone().sub(op).normalize();
+      let delta = np.distanceTo(op);
+
+      let numSteps = Math.ceil(delta/(projectile.getRadius() * 1.8));
+      let p = op.clone();
+
+      for(let step = 1; step <= numSteps; step++){
+        let oldp = p.clone();
+        p.add(direction.clone().multiplyScalar(delta/numSteps));
+        projectile.setPosition(p);
+        let collisions = detectCollisions(projectile);
+        if(collisions.length != 0 || projectile.expired()){
+          handleProjCollision(projectile, collisions);
+          break;
+        }
       }
+      
+      if(!projectile.expired()){
+        // reset
+        projectile.setPosition(op);
+        // allow projectile to step TODO: change how this works?
+        projectile.step(10);
+      }
+      
     });
 
   }

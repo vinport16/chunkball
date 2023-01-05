@@ -21,10 +21,15 @@ var Projectile = function (pos, vel, r) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  this.step10ms = function(){
-    age += 10;
-    velocity.setY(velocity.y - (0.010 * GRAVITY));
-    position.add(velocity.clone().multiplyScalar(0.010));
+  this.step = function(deltaTime){
+    age += deltaTime;
+    velocity.setY(velocity.y - (0.001 * deltaTime * GRAVITY));
+    position.add(velocity.clone().multiplyScalar(0.001 * deltaTime));
+  }
+
+  this.nextPosition = function(deltaTime){
+    let v = velocity.clone().setY(velocity.y - (0.001 * deltaTime * GRAVITY));
+    return position.clone().add(v.multiplyScalar(0.001 * deltaTime));
   }
 
   this.nextDelta = function(){
@@ -51,6 +56,10 @@ var Projectile = function (pos, vel, r) {
 
   this.setExpireTime = function(t){
     expires = t;
+  }
+
+  this.getAge = function(){
+    return age;
   }
 
   this.expired = function(){

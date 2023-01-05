@@ -18,7 +18,7 @@ var Loadout = function (type_) {
     },
     { 
       name: 'sniper',
-      launchSpeed: 80,
+      launchSpeed: 120,
       projectileRadius: 0.06,
       reloadTime: 1000,
       maxMagazine: 50,
