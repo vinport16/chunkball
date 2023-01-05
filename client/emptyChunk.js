@@ -31,6 +31,8 @@ var EmptyChunk = function(position_, size_){
 
   this.unbuild = function(scene){}
 
+  this.getRandomSpawnPosition = function(){}
+
   this.size = function(){
     return size;
   }
