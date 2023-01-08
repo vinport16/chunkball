@@ -236,6 +236,8 @@ var Server = function (world_, scene_) {
           projectile.owner.victims.push(collision);
 
           collision.conn.send({youWereHit:{by:projectile.owner.id}});
+          collision.sendAnnouncement("you were hit by " + projectile.owner.name);
+          projectile.owner.sendAnnouncement("you hit "+ collision.name);
           updateLeaderboard();
         }
       });
@@ -312,6 +314,7 @@ var Server = function (world_, scene_) {
     }
     
     client.isTeleporting = true;
+    sendChunk(client, spawnChunk.getPosition());
     client.conn.send({moveTo:spawnChunk.getPosition().add(spawnLocation).toArray()});
   }
 
