@@ -88,6 +88,7 @@ var Server = function (world_) {
 
   var loadouts = [
     Loadout.SCOUT,
+    Loadout.BOUNCE,
     Loadout.BOMB,
     Loadout.SNIPER,
     Loadout.SCATTER,
@@ -135,9 +136,9 @@ var Server = function (world_) {
         if(client.loadoutIDX >= loadouts.length){
           client.loadoutIDX = 0;
         }
-        client.loadout = new Loadout(client.loadoutIDX);
+        client.loadout = new Loadout(loadouts[client.loadoutIDX]);
         announceLoadout(client);
-        sendMessage(client, "loadout updated to: " + client.loadout.name);
+        client.sendAnnouncement("loadout updated to: " + client.loadout.name);
       }
       if(data.message){
         sendMessage(client, data.message);

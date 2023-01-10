@@ -99,7 +99,63 @@ var Loadout = function (type_) {
         worldState.projectiles.push(newp);
       },
     },
+    { 
+      name: 'bounce',
+      launchSpeed: 25,
+      projectileRadius: 0.11,
+      reloadTime: 600,
+      maxMagazine: 100,
+      launch: function(client, worldState){
+        let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
+        let newp = new Projectile(client.position.clone(), velocity, this.projectileRadius);
+        newp.owner = client;
+        newp.setExpireTime(5000);
+
+        let bounceCount = 0;
+        let bounceLimit = 7;
+        let bounce = function(){
+          bounceCount += 1;
+          if(bounceCount > bounceLimit){
+            return;
+          }
+          let reflection = bounceVelocity(newp, worldState.world);
+          reflection.multiplyScalar(0.8);
+          let bp = new Projectile(newp.getPosition(), reflection, newp.getRadius());
+          bp.setExpireTime(5000 - newp.getAge());
+          bp.owner = client;
+          bp.setFriendlyFire(true); // can hit self >:)
+          bp.onDestroy = bounce; // recursive
+          worldState.projectiles.push(bp);
+          newp = bp;
+        }
+
+        newp.onDestroy = bounce;
+
+        worldState.projectiles.push(newp);
+      },
+    },
   ];
+
+  // projectile just hit something. If it hit the world, reflect velocity
+  // off the face of the block.
+  function bounceVelocity(projectile, world){
+    let p = projectile.getPosition();
+    let inch = 0.03;
+    let canMoveX = world.noBlockAt(p.clone().setX(p.x + inch)) && world.noBlockAt(p.clone().setX(p.x - inch));
+    let canMoveY = world.noBlockAt(p.clone().setY(p.y + inch)) && world.noBlockAt(p.clone().setY(p.y - inch));
+    let canMoveZ = world.noBlockAt(p.clone().setZ(p.z + inch)) && world.noBlockAt(p.clone().setZ(p.z - inch));
+
+    if(!canMoveX){
+      return projectile.getVelocity().multiply(new THREE.Vector3(-1,1,1));
+    }else if(!canMoveY){
+      return projectile.getVelocity().multiply(new THREE.Vector3(1,-1,1));
+    }else if(!canMoveZ){
+      return projectile.getVelocity().multiply(new THREE.Vector3(1,1,-1));
+    }else{
+      // didn't hit wall: no bounce: same velocity
+      return projectile.getVelocity();
+    }
+  }
   
   var proto = types[type_];
   
@@ -119,6 +175,7 @@ Loadout.SCATTER = 2;
 Loadout.HEAVY = 3;
 Loadout.SEEKING = 4;
 Loadout.BOMB = 5;
+Loadout.BOUNCE = 6;
 
 Loadout.prototype.constructor = Loadout;
 

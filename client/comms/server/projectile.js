@@ -94,7 +94,7 @@ var Projectile = function (pos, vel, r) {
     let delta = velocity.clone().multiplyScalar(0.010);
     let checkp = position.clone().sub(delta); // was not hitting at last position
     let direction = 1; // forward
-    for(let i = 0; i < 5; i++){
+    for(let i = 0; i < 9; i++){
       if(world.blockAt(checkp)){
         // back up
         direction = -1;
@@ -105,6 +105,8 @@ var Projectile = function (pos, vel, r) {
       delta.multiplyScalar(0.5);
       checkp.add(delta.clone().multiplyScalar(direction));
     }
+    // make sure it's not fully inside the wall
+    checkp.add(delta.clone().multiplyScalar(-1));
     position = checkp;
   }
 
