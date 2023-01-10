@@ -668,10 +668,82 @@ voxImport.onclick = function () {
 }
 
 function loadParsedVox(jsonStrVox){
+  let e = map.exists;
   console.log("here");
+  voxJson = JSON.parse(jsonStrVox)
   // Now load the data from the vox file into our local variables:
   // First, get the map size
+  console.log(voxJson)
+  console.log(voxJson["XYZI"].length)
+  console.log(voxJson["RGBA"].length)
+
+  // .vox file has  256 colors, but we don't want to store all of these colors in the mapFile. 
+  // Instead, store the mapping between the color reference in the .vox file vs the mapFile
+  var colorMapping = {}
+
+  map = []
+  for(let x = 0; x < voxJson["SIZE"].x; x++){
+    map.push([]);
+    for(let y = 0; y < voxJson["SIZE"].z; y++){
+      map[x].push([]);
+      for(let z = 0; z < voxJson["SIZE"].y; z++){
+        map[x][y].push([]);
+      }
+    }
+  }
+  console.log(map)
+
+  // Populate the filled in squares. The value in the map that represents that square is the index of the color in the mapFile. 
+  function populateMap(coordinate){
+    console.log(colorMapping)
+    var newColorIndex = colorMapping[coordinate.c]
+    if (newColorIndex == null){
+      colorMapping[coordinate.c] = Object.keys(colorMapping).length + 1;
+      newColorIndex = colorMapping[coordinate.c];
+    }
+    map[coordinate.x][coordinate.z][coordinate.y] = newColorIndex;
+
+  }
+  voxJson["XYZI"].forEach(populateMap)
+  // TODO: fill in missing values
+  console.log(map)
+
+  // Populate the colors from the color mapping
+  colors = [emptyColor]
+
+  function rgba2hex(r, g, b, a) {
+    hex = "#" + 
+    (r | 1 << 8).toString(16).slice(1) +
+    (g | 1 << 8).toString(16).slice(1) +
+    (b | 1 << 8).toString(16).slice(1) + 
+    (a | 1 << 8).toString(16).slice(1); 
   
+    return hex;
+  }
+
+  function populateColors(colorMappingKey){
+    colorIndex = colorMapping[colorMappingKey]
+    voxColor = voxJson["RGBA"][colorIndex]  
+    colorHex = rgba2hex(voxColor.r, voxColor.g, voxColor.b, voxColor.a)
+    colors.push([colorHex, 0.01])
+  }
+  
+  Object.keys(colorMapping).forEach(populateColors);
+
+  console.log(colors)
+
+  for(var c in colors){
+    addColorDiv(colors[c], "");
+  }
+
+  map.exists = e;
+
+  map = flipMap(map);
+
+
+  drawMap();
+  console.log("done")
+
 }
 
 socket.on("jsonStrVox", loadParsedVox);
