@@ -23,6 +23,12 @@ var Projectile = function (scene_, position, r) {
   var material = new THREE.MeshLambertMaterial({
     color: 0xaaaaaa,
   });
+  
+  // so you can see from the inside of a bomb blast
+  if(radius > 2){
+    material.side = THREE.DoubleSide;
+  }
+
   mesh = new THREE.Mesh(geometry, material);
 
   mesh.position.set(...position.toArray());
