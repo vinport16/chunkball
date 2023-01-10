@@ -682,9 +682,9 @@ function loadParsedVox(jsonStrVox){
   var colorMapping = {}
 
   map = []
-  for(let x = 0; x < voxJson["SIZE"].x; x++){
+  for(let x = 0; x < voxJson["SIZE"].z; x++){
     map.push([]);
-    for(let y = 0; y < voxJson["SIZE"].z; y++){
+    for(let y = 0; y < voxJson["SIZE"].x; y++){
       map[x].push([]);
       for(let z = 0; z < voxJson["SIZE"].y; z++){
         map[x][y].push([]);
@@ -701,7 +701,7 @@ function loadParsedVox(jsonStrVox){
       colorMapping[coordinate.c] = Object.keys(colorMapping).length + 1;
       newColorIndex = colorMapping[coordinate.c];
     }
-    map[coordinate.x][coordinate.z][coordinate.y] = newColorIndex;
+    map[coordinate.z][coordinate.x][coordinate.y] = newColorIndex;
 
   }
   voxJson["XYZI"].forEach(populateMap)
@@ -709,25 +709,27 @@ function loadParsedVox(jsonStrVox){
   console.log(map)
 
   // Populate the colors from the color mapping
-  colors = [emptyColor]
+  colors = new Array(Object.keys(colorMapping) + 1)
+  colors[0] = emptyColor
 
-  function rgba2hex(r, g, b, a) {
+  function rgba2hex(r, g, b) {
     hex = "#" + 
     (r | 1 << 8).toString(16).slice(1) +
     (g | 1 << 8).toString(16).slice(1) +
-    (b | 1 << 8).toString(16).slice(1) + 
-    (a | 1 << 8).toString(16).slice(1); 
+    (b | 1 << 8).toString(16).slice(1) 
+    //(a | 1 << 8).toString(16).slice(1); 
   
     return hex;
   }
 
   function populateColors(colorMappingKey){
     colorIndex = colorMapping[colorMappingKey]
-    voxColor = voxJson["RGBA"][colorIndex]  
-    colorHex = rgba2hex(voxColor.r, voxColor.g, voxColor.b, voxColor.a)
-    colors.push([colorHex, 0.01])
+    voxColor = voxJson["RGBA"][colorMappingKey]  
+    colorHex = rgba2hex(voxColor.r, voxColor.g, voxColor.b)
+    colors[colorIndex] = [colorHex, 0.01]
   }
   
+  console.log(colorMapping)
   Object.keys(colorMapping).forEach(populateColors);
 
   console.log(colors)
@@ -738,7 +740,7 @@ function loadParsedVox(jsonStrVox){
 
   map.exists = e;
 
-  map = flipMap(map);
+  //map = flipMap(map);
 
 
   drawMap();
