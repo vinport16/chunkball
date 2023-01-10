@@ -660,7 +660,6 @@ voxImport.onclick = function () {
   let reader = new FileReader();
   reader.onload = function (event) {
     let contents = event.target.result;
-    console.log("hello");
     socket.emit("parseVox", contents);
   }
   reader.readAsArrayBuffer(file.files[0]);
@@ -669,18 +668,15 @@ voxImport.onclick = function () {
 
 function loadParsedVox(jsonStrVox){
   let e = map.exists;
-  console.log("here");
   voxJson = JSON.parse(jsonStrVox)
   // Now load the data from the vox file into our local variables:
-  // First, get the map size
   console.log(voxJson)
-  console.log(voxJson["XYZI"].length)
-  console.log(voxJson["RGBA"].length)
 
   // .vox file has  256 colors, but we don't want to store all of these colors in the mapFile. 
   // Instead, store the mapping between the color reference in the .vox file vs the mapFile
   var colorMapping = {}
 
+  // Create a blank map to fill in later
   map = []
   for(let x = 0; x < voxJson["SIZE"].z; x++){
     map.push([]);
@@ -691,11 +687,9 @@ function loadParsedVox(jsonStrVox){
       }
     }
   }
-  console.log(map)
 
   // Populate the filled in squares. The value in the map that represents that square is the index of the color in the mapFile. 
   function populateMap(coordinate){
-    console.log(colorMapping)
     var newColorIndex = colorMapping[coordinate.c]
     if (newColorIndex == null){
       colorMapping[coordinate.c] = Object.keys(colorMapping).length + 1;
@@ -705,46 +699,44 @@ function loadParsedVox(jsonStrVox){
 
   }
   voxJson["XYZI"].forEach(populateMap)
-  // TODO: fill in missing values
-  console.log(map)
 
   // Populate the colors from the color mapping
   colors = new Array(Object.keys(colorMapping) + 1)
   colors[0] = emptyColor
 
+  // Convert the RGB value to a hex color
   function rgba2hex(r, g, b) {
     hex = "#" + 
     (r | 1 << 8).toString(16).slice(1) +
     (g | 1 << 8).toString(16).slice(1) +
     (b | 1 << 8).toString(16).slice(1) 
-    //(a | 1 << 8).toString(16).slice(1); 
   
     return hex;
   }
 
   function populateColors(colorMappingKey){
     colorIndex = colorMapping[colorMappingKey]
-    voxColor = voxJson["RGBA"][colorMappingKey]  
+    voxColor = voxJson["RGBA"][colorMappingKey - 1]  
     colorHex = rgba2hex(voxColor.r, voxColor.g, voxColor.b)
     colors[colorIndex] = [colorHex, 0.01]
   }
   
-  console.log(colorMapping)
   Object.keys(colorMapping).forEach(populateColors);
 
-  console.log(colors)
+  // Remove the existing colors from the UI
+  var colorParent = document.getElementById("colorSelect");
+  while (colorParent.firstChild) {
+    colorParent.removeChild(colorParent.firstChild);
+  }
 
+  // Add the imported colors to the UI
   for(var c in colors){
     addColorDiv(colors[c], "");
   }
 
   map.exists = e;
 
-  //map = flipMap(map);
-
-
   drawMap();
-  console.log("done")
 
 }
 
@@ -957,8 +949,11 @@ function addColorDiv(colorInfo, spawnTeamText) {
 
 
   var newColorTooltip = document.createElement("span");
-
-  newColorTooltip.innerHTML = color + ", " + range;
+  if(color == "white"){
+    newColorTooltip.innerHTML = "Eraser"
+  }else{
+    newColorTooltip.innerHTML = color + ", " + range;
+  }
   if (colors.length % 5 == 1) {
     newColorTooltip.setAttribute("class", "tooltipText tooltipRight");
   } else if (colors.length % 5 == 0) {
@@ -967,8 +962,14 @@ function addColorDiv(colorInfo, spawnTeamText) {
     newColorTooltip.setAttribute("class", "tooltipText tooltipCenter");
   }
 
-
   document.getElementById(color).appendChild(newColorTooltip);
+
+  if(color == "white"){
+    var eraserImage = document.createElement("img");
+    eraserImage.setAttribute("id", color);
+    eraserImage.setAttribute("src", "./32px-Eraser_icon.svg.png")
+    document.getElementById(color).appendChild(eraserImage);
+  }
 
 }
 

@@ -21,7 +21,6 @@ var parseMagicaVoxel = require('parse-magica-voxel');
 io.sockets.on("connection", function(Socket){
   console.log("new connection " + Socket.id);
   Socket.on("parseVox", function(data){
-    console.log(data)
     result = JSON.stringify(parseMagicaVoxel(data))
     io.emit("jsonStrVox", result);
   });
