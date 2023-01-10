@@ -13,5 +13,20 @@ app.use('/favicon.ico', express.static('favicon.ico'));
 app.get('/', (req, res, next) => res.redirect('/start'));
 console.log("created index");
 
+
+var socket = require('socket.io')
+var io = socket(server);
+var parseMagicaVoxel = require('parse-magica-voxel');
+
+io.sockets.on("connection", function(Socket){
+  console.log("new connection " + Socket.id);
+  Socket.on("parseVox", function(data){
+    console.log(data)
+    result = JSON.stringify(parseMagicaVoxel(data))
+    io.emit("jsonStrVox", result);
+  });
+});
+
+
 server.listen(port);
 console.log("listening");

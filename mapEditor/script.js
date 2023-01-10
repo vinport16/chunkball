@@ -1,3 +1,5 @@
+const socket = io();
+
 var square_width = 10;
 var view_position = { x: -20, y: -2 };
 var view_height = 0;
@@ -417,6 +419,7 @@ var brush_select = document.getElementById("brush");
 
 var jsonImport = document.getElementById("jsonImport");
 var jsonExport = document.getElementById("jsonExport");
+var voxImport = document.getElementById("voxImport")
 var addColor = document.getElementById("addNewColor");
 var colorSelect = document.getElementById("colorSelect");
 
@@ -652,6 +655,27 @@ jsonExport.onclick = function () {
   }
 
 }
+
+voxImport.onclick = function () {
+  let reader = new FileReader();
+  reader.onload = function (event) {
+    let contents = event.target.result;
+    console.log("hello");
+    socket.emit("parseVox", contents);
+  }
+  reader.readAsArrayBuffer(file.files[0]);
+
+}
+
+function loadParsedVox(jsonStrVox){
+  console.log("here");
+  // Now load the data from the vox file into our local variables:
+  // First, get the map size
+  
+}
+
+socket.on("jsonStrVox", loadParsedVox);
+
 
 insert_layer.onclick = function () {
   saveState();
