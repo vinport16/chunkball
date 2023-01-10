@@ -76,21 +76,25 @@ function intersecting(cycenter, cyheight, cyradius, spcenter, spradius){
 Client.prototype.constructor = Client;
 
 
-var Server = function (world_, scene_) {
+var Server = function (world_) {
   
-  var world = world_;
-  var scene = scene_;
+  var worldState = {
+    world: world_,
+    clients: [],
+    projectiles: [],
+  }
+
   var fallDepthLimit = -30; // if you fall off the world, respawn at y=-30
 
   var loadouts = [
     Loadout.SCOUT,
+    Loadout.BOUNCE,
+    Loadout.BOMB,
     Loadout.SNIPER,
     Loadout.SCATTER,
     Loadout.HEAVY,
+    Loadout.SEEKING,
   ];
-
-  var clients = [];
-  var projectiles = [];
 
   // map of chunk -> list of clients
   // representing the clients who are currently listening for updates
@@ -102,7 +106,7 @@ var Server = function (world_, scene_) {
   this.addClient = function(conn){
     let client = new Client(idCounter++, conn);
 
-    clients.push(client);
+    worldState.clients.push(client);
 
     conn.on("data", function(data){
       if(data.updatePosition){
@@ -132,9 +136,9 @@ var Server = function (world_, scene_) {
         if(client.loadoutIDX >= loadouts.length){
           client.loadoutIDX = 0;
         }
-        client.loadout = new Loadout(client.loadoutIDX);
+        client.loadout = new Loadout(loadouts[client.loadoutIDX]);
         announceLoadout(client);
-        sendMessage(client, "loadout updated to: " + client.loadout.name);
+        client.sendAnnouncement("loadout updated to: " + client.loadout.name);
       }
       if(data.message){
         sendMessage(client, data.message);
@@ -154,7 +158,7 @@ var Server = function (world_, scene_) {
 
     conn.on("close", function(){
       announcePlayerLeft(client);
-      clients = clients.filter(c => c != client);
+      worldState.clients = worldState.clients.filter(c => c != client);
       client.removed = true;
       updateLeaderboard();
     });
@@ -165,20 +169,21 @@ var Server = function (world_, scene_) {
   }
 
   this.sendUpdates = function(){
-    let allPositions = clients.map(function(client){
+    let allPositions = worldState.clients.map(function(client){
       return {
         id: client.id,
         position: client.position.toArray(),
         direction: client.direction.toArray(),
       };
     });
-    let allProjectiles = projectiles.map(function(p){
+    let allProjectiles = worldState.projectiles.map(function(p){
       return {
         id: p.id,
         position: p.getPosition().toArray(),
+        radius: p.getRadius(),
       };
     })
-    clients.forEach(function(client){
+    worldState.clients.forEach(function(client){
       client.conn.send({
         playerPositions: allPositions,
         projectilePositions: allProjectiles,
@@ -187,7 +192,7 @@ var Server = function (world_, scene_) {
   }
 
   this.introduceNewPlayer = function(client){
-    clients.forEach(function(other){
+    worldState.clients.forEach(function(other){
       if(other !== client){
         other.conn.send({newPlayer:{id: client.id, username: client.name, color: client.color}});
         client.conn.send({newPlayer:{id: other.id, username: other.name, color: other.color}});
@@ -196,7 +201,7 @@ var Server = function (world_, scene_) {
   }
 
   var playersAt = function(projectile){
-    return clients.filter(function(client){
+    return worldState.clients.filter(function(client){
       return client.hitBy(projectile);
     });
   }
@@ -205,55 +210,51 @@ var Server = function (world_, scene_) {
     let collisions = [];
 
     // colliding with world?
-    if(world.blockAt(projectile.getPosition())){
-      collisions.push(world);
+    if(worldState.world.blockAt(projectile.getPosition())){
+      collisions.push(worldState.world);
     }
-    collisions.push(...playersAt(projectile).filter(player => player != projectile.owner && !player.isTeleporting));
+    collisions.push(...playersAt(projectile).filter(
+      player => (projectile.getFriendlyFire() || player != projectile.owner) && !player.isTeleporting)
+    );
     return collisions;
   }
 
   function launch(client, angle){
-    let launched = client.loadout.launch(client.position, angle);
-
-    launched.forEach(function(projectile){
-      projectile.owner = client;
-      projectiles.push(projectile);
-      sendNewProjectile(projectile);
-    });
+    client.direction = angle;
+    client.loadout.launch(client, worldState);
   }
 
   function handleProjCollision(projectile, collisions){
-    if(collisions.includes(world)){
+    if(collisions.includes(worldState.world)){
       // set position to position of hit
-      projectile.moveToHitPosition(world);
-    }else if(collisions.length != 0){
-      collisions.forEach(function(collision){
-        if(collision != world){
-          // collision is a client
-          respawn(collision);
-
-          collision.assailants.push(projectile.owner);
-          projectile.owner.victims.push(collision);
-
-          collision.conn.send({youWereHit:{by:projectile.owner.id}});
-          collision.sendAnnouncement("you were hit by " + projectile.owner.name);
-          projectile.owner.sendAnnouncement("you hit "+ collision.name);
-          updateLeaderboard();
-        }
-      });
-    }else{
-      // expired
+      projectile.moveToHitPosition(worldState.world);
     }
+    collisions.forEach(function(collision){
+      if(collision != worldState.world){
+        // collision is a client
+        respawn(collision);
+
+        collision.assailants.push(projectile.owner);
+        projectile.owner.victims.push(collision);
+
+        collision.conn.send({youWereHit:{by:projectile.owner.id}});
+        collision.sendAnnouncement("you were hit by " + projectile.owner.name);
+        projectile.owner.sendAnnouncement("you hit "+ collision.name);
+        updateLeaderboard();
+      }
+    });
+
     projectile.destroy();
-    projectiles = projectiles.filter(p => p != projectile);
+    worldState.projectiles = worldState.projectiles.filter(p => p != projectile);
 
     announceProjHit(projectile);
   }
 
   function moveProjectiles10ms(){
-    projectiles.forEach(function(projectile){
+    worldState.projectiles.forEach(function(projectile){
       let op = projectile.getPosition();
-      let np = projectile.nextPosition(10);
+      // estimate next position
+      let np = projectile.nextPosition(10, worldState);
       let direction = np.clone().sub(op).normalize();
       let delta = np.distanceTo(op);
 
@@ -274,29 +275,20 @@ var Server = function (world_, scene_) {
       if(!projectile.expired()){
         // reset
         projectile.setPosition(op);
-        // allow projectile to step TODO: change how this works?
-        projectile.step(10);
+        // apply actual step
+        projectile.step(10, worldState);
       }
       
     });
 
   }
 
-  function sendNewProjectile(p){
-    clients.forEach(function(client){
-      client.conn.send({newProjectile:{
-        id: p.id,
-        position: p.getPosition().toArray(),
-        radius: p.getRadius(),
-      }});
-    });
-  }
-
   function announceProjHit(p){
-    clients.forEach(function(client){
+    worldState.clients.forEach(function(client){
       client.conn.send({projectileHit:{
         id: p.id,
         position: p.getPosition().toArray(),
+        radius: p.getRadius(),
       }});
     });
   }
@@ -307,7 +299,7 @@ var Server = function (world_, scene_) {
     var spawnChunk = null
     var spawnLocation = null
     while (spawnLocation == null){
-      spawnChunk = world.getRandomChunk()
+      spawnChunk = worldState.world.getRandomChunk()
       if (spawnChunk != null){
         spawnLocation = spawnChunk.getRandomSpawnPosition()
       }
@@ -319,7 +311,7 @@ var Server = function (world_, scene_) {
   }
 
   function sendNameUpdateFor(client){
-    clients.forEach(function(other){
+    worldState.clients.forEach(function(other){
       if(other !== client){
         other.conn.send({nameUpdate:{id: client.id, username: client.name}});
       }
@@ -327,7 +319,7 @@ var Server = function (world_, scene_) {
   }
 
   function sendColorUpdateFor(client){
-    clients.forEach(function(other){
+    worldState.clients.forEach(function(other){
       if(other !== client){
         other.conn.send({colorUpdate:{id: client.id, color: client.color}});
       }
@@ -335,7 +327,7 @@ var Server = function (world_, scene_) {
   }
 
   function sendChunk(client, p){
-    let chunk = world.chunkAt(p);
+    let chunk = worldState.world.chunkAt(p);
     if (!chunk) return;
     client.conn.send({chunk:{
       position: chunk.getPosition().toArray(),
@@ -345,7 +337,7 @@ var Server = function (world_, scene_) {
   }
 
   function sendMessage(sender, messageText){
-    clients.forEach(function(client){
+    worldState.clients.forEach(function(client){
       client.conn.send({message:{from: sender.name, text: messageText}});
     });
   }
@@ -361,7 +353,7 @@ var Server = function (world_, scene_) {
   }
 
   function announcePlayerLeft(client){
-    clients.forEach(function(other){
+    worldState.clients.forEach(function(other){
       if(other !== client){
         other.sendAnnouncement(client.name + " left the game");
         other.conn.send({playerLeft:{id: client.id}});
@@ -370,7 +362,7 @@ var Server = function (world_, scene_) {
   }
 
   function updateLeaderboard(){
-    let list = clients.map(function(client){
+    let list = worldState.clients.map(function(client){
       return {
         name: client.name,
         id: client.id,
@@ -379,7 +371,7 @@ var Server = function (world_, scene_) {
       };
     });
     let lb = {list: list};
-    clients.forEach(function(client){
+    worldState.clients.forEach(function(client){
       lb.myId = client.id; // each client can check their ID here
       client.conn.send({leaderboard:lb});
     });

@@ -33,7 +33,7 @@ setup.onReady(function () {
 
   if (communication.isServing()) {
 
-    server = new Server(world, scene);
+    server = new Server(world);
 
     communication.onConnect(function (conn) {
       server.addClient(conn);
