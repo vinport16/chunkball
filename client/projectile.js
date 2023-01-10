@@ -8,7 +8,18 @@ var Projectile = function (scene_, position, r) {
   var destroyed = false;
   var mesh;
 
-  var geometry = new THREE.SphereBufferGeometry(radius, 8, 5);
+  // make geometry smoother for larger spheres
+  var geometry;
+  if(radius < 0.5){
+    geometry = new THREE.SphereBufferGeometry(radius, 8, 5);
+  }else if(radius < 1){
+    geometry = new THREE.SphereBufferGeometry(radius, 10, 7);
+  }else if(radius < 2){
+    geometry = new THREE.SphereBufferGeometry(radius, 12, 9);
+  }else{
+    geometry = new THREE.SphereBufferGeometry(radius, 20, 13);
+  }
+  
   var material = new THREE.MeshLambertMaterial({
     color: 0xaaaaaa,
   });

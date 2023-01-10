@@ -40,16 +40,15 @@ var Client = function (world_, scene_) {
         agent.updateColor(npd.color);
         agent.updateNameTag();
         agents[npd.id] = agent;
-        console.log("newplayer", agent.getName(), npd.color);
-      }
-      if(data.newProjectile){
-        let npd = data.newProjectile;
-        projectiles[npd.id] = new Projectile(scene, new THREE.Vector3(...npd.position), npd.radius);
       }
       if(data.projectileHit){
         let hd = data.projectileHit;
-        projectiles[hd.id].setPosition(new THREE.Vector3(...hd.position));
-        projectiles[hd.id].destroy();
+        if(projectiles[hd.id]){
+          projectiles[hd.id].setPosition(new THREE.Vector3(...hd.position));
+          projectiles[hd.id].destroy();
+        }else{
+          (new Projectile(scene, new THREE.Vector3(...hd.position), hd.radius)).destroy();
+        }
       }
       if(data.youWereHit){
         let hitYou = agents[data.youWereHit.by];
@@ -68,7 +67,11 @@ var Client = function (world_, scene_) {
       }
       if(data.projectilePositions){
         data.projectilePositions.forEach(function(p){
-          projectiles[p.id].setPosition(new THREE.Vector3(...p.position));
+          if(projectiles[p.id]){
+            projectiles[p.id].setPosition(new THREE.Vector3(...p.position));
+          }else{
+            projectiles[p.id] = new Projectile(scene, new THREE.Vector3(...p.position), p.radius);
+          }
         });
       }
       if(data.nameUpdate){
@@ -79,7 +82,6 @@ var Client = function (world_, scene_) {
       if(data.colorUpdate){
         let update = data.colorUpdate;
         agents[update.id].updateColor(update.color);
-        console.log("client color set", update.id, update.color);
       }
       if(data.loadoutUpdate){
         let l = data.loadoutUpdate;
