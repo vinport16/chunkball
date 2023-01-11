@@ -678,6 +678,12 @@ function loadParsedVox(jsonStrVox){
 
   // Create a blank map to fill in later
   map = []
+
+  if(voxJson["SIZE"] instanceof Array){
+    alert("Please union the objects in the .vox file before uploading.")
+    return;
+  }
+
   for(let x = 0; x < voxJson["SIZE"].z; x++){
     map.push([]);
     for(let y = 0; y < voxJson["SIZE"].x; y++){
