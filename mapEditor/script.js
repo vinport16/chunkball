@@ -1,3 +1,5 @@
+//import {parseMagicaVoxelFile} from './bundle'
+
 const socket = io();
 
 var square_width = 10;
@@ -657,10 +659,16 @@ jsonExport.onclick = function () {
 }
 
 voxImport.onclick = function () {
+  console.log("click")
   let reader = new FileReader();
   reader.onload = function (event) {
+    console.log("hi")
     let contents = event.target.result;
-    socket.emit("parseVox", contents);
+    jsonStrVox = parseMagicaVoxel(contents)
+    console.log("done")
+    voxJson = JSON.parse(jsonStrVox)
+    console.log(voxJson)
+    //socket.emit("parseVox", contents);
   }
   reader.readAsArrayBuffer(file.files[0]);
 
