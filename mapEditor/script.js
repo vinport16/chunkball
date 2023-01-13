@@ -711,7 +711,7 @@ function loadParsedVox(voxJson){
     colorIndex = colorMapping[colorMappingKey]
     voxColor = voxJson["RGBA"][colorMappingKey - 1]  
     colorHex = rgba2hex(voxColor.r, voxColor.g, voxColor.b)
-    colors[colorIndex] = [colorHex, 0.01]
+    colors[colorIndex] = [colorHex, 0.1]
   }
 
   Object.keys(colorMapping).forEach(populateColors);
