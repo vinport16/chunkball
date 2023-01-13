@@ -18,6 +18,26 @@ var Client = function (id_, conn_) {
   this.isTeleporting = false;
   this.loadoutIDX = 0;
   this.loadout = new Loadout(Loadout.SCOUT);
+  //TODO: Remove the advanced loadouts when we have a way to earn the in-game
+  this.unlockedLoadouts = [
+    Loadout.SCOUT,
+    Loadout.BOUNCE,
+    Loadout.BOMB,
+    Loadout.SNIPER,
+    Loadout.SCATTER,
+    Loadout.HEAVY,
+    Loadout.SEEKING,
+  ];
+
+  this.shotsLeft = {
+    "scout": 50,
+    "sniper": 50,
+    "heavy": 20,
+    "seeking": 5,
+    "bomb": 10,
+    "bounce": 30,
+    "scatter": 20
+  }
 
 
   this.assailants = []; // other clients, or strings: ie "fell"
@@ -86,16 +106,6 @@ var Server = function (world_) {
 
   var fallDepthLimit = -30; // if you fall off the world, respawn at y=-30
 
-  var loadouts = [
-    Loadout.SCOUT,
-    Loadout.BOUNCE,
-    Loadout.BOMB,
-    Loadout.SNIPER,
-    Loadout.SCATTER,
-    Loadout.HEAVY,
-    Loadout.SEEKING,
-  ];
-
   // map of chunk -> list of clients
   // representing the clients who are currently listening for updates
   // on that chunk (within their render distance)
@@ -133,12 +143,13 @@ var Server = function (world_) {
       }
       if(data.changeLoadout){
         client.loadoutIDX++;
-        if(client.loadoutIDX >= loadouts.length){
+        if(client.loadoutIDX >= client.unlockedLoadouts.length){
           client.loadoutIDX = 0;
         }
-        client.loadout = new Loadout(loadouts[client.loadoutIDX]);
+        client.loadout = new Loadout(client.unlockedLoadouts[client.loadoutIDX]);
+        console.log(client.loadout)
         announceLoadout(client);
-        client.sendAnnouncement("loadout updated to: " + client.loadout.name);
+        client.sendAnnouncement("loadout updated to: " + client.loadout.name + "; Shots Left: " + client.shotsLeft[client.loadout.name]);
       }
       if(data.message){
         sendMessage(client, data.message);
@@ -220,6 +231,7 @@ var Server = function (world_) {
   }
 
   function launch(client, angle){
+    client.shotsLeft[client.loadout.name] -= 1;
     client.direction = angle;
     client.loadout.launch(client, worldState);
   }
@@ -347,7 +359,7 @@ var Server = function (world_) {
       name: client.loadout.name,
       reloadTime: client.loadout.reloadTime,
       loadStatus: 0,
-      magazine: client.loadout.maxMagazine,
+      magazine: client.shotsLeft[client.loadout.name],
       maxMagazine: client.loadout.maxMagazine,
     }})
   }
