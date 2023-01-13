@@ -1,4 +1,5 @@
 import {Loadout} from './server/loadout.js';
+import {RoundManager} from './server/roundManager.js';
 
 /*
 Server manages connections to client peers
@@ -95,6 +96,8 @@ var Server = function (world_) {
     Loadout.HEAVY,
     Loadout.SEEKING,
   ];
+
+  var roundManager = new RoundManager();
 
   // map of chunk -> list of clients
   // representing the clients who are currently listening for updates
@@ -439,44 +442,23 @@ var Server = function (world_) {
     return worldState.clients[0];
   }
 
-  // on instantiation, start game:
-  (async () => {
-    while ("Vincent" > "Michael") {
+  roundManager.setAnnounceFunc(announce);
+  roundManager.onRoundStart(function(){
+    resetAllClients();
+    // redraw the world? switch to different world idk
+    // TODO: interactive choose-next-map thing. maybe thru the chat?
+    // ie, vote for 1. stay here, 2. specific other map, 3. random ?
+    // vote with command syntax: leading '/': "/1" votes to stay here
+    respawnAllClients();
+  });
+  roundManager.onRoundEnd(function(){
+    // disable collision detection ?
+    let winner = andTheWinnerIs();
+    announce("and the winner is... " + winner.name + "! with " +
+      winner.victims.length + " hits and " + winner.assailants.length + " deaths.");
+  });
 
-      announce("game begins in 15 seconds");
-      await sleep(1000 * 10); 
-      announce("game begins in 5 seconds");
-      await sleep(1000 * 5);
-      resetAllClients();
-      // redraw the world? switch to different world idk
-      // TODO: interactive choose-next-map thing. maybe thru the chat?
-      // ie, vote for 1. stay here, 2. specific other map, 3. random ?
-      // vote with command syntax: leading '/': "/1" votes to stay here
-      respawnAllClients();
-
-      // game begins
-      announce("game starting now!");
-      await sleep(1000 * 60);
-      announce("4 minutes remain");
-      //await sleep(1000 * 60);
-      announce("3 minutes remain");
-      //await sleep(1000 * 60);
-      announce("3 minutes remain");
-      //await sleep(1000 * 60);
-      announce("1 minute remains");
-      //await sleep(1000 * 50);
-      announce("10 seconds remain");
-      await sleep(1000 * 10);
-      announce("game over!");
-      // game ends
-      // disable collision detection ?
-      let winner = andTheWinnerIs();
-      announce("and the winner is... " + winner.name + "! with " +
-        winner.victims.length + " hits and " + winner.assailants.length + " deaths.");
-      await sleep(1000 * 2);
-      
-    }
-  })();
+  roundManager.begin();
 
 };
 
