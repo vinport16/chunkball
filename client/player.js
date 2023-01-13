@@ -1,4 +1,5 @@
 import {PointerLockControls} from './pointerlock.js';
+import { Loadout } from './comms/server/loadout.js';
 
 var Player = function (position_, world_) {
   
@@ -26,9 +27,20 @@ var Player = function (position_, world_) {
     name: "scout",
     reloadTime:100,
     loadStatus:100,
-    magazine:300,
+    magazine:50,
     maxMagazine:300,
   };
+
+  // These are the starting values for each type. Players can gather more shots up to the limit for that type.
+  var shotsLeft = {
+    "scout": 50,
+    "sniper": 50,
+    "heavy": 20,
+    "seeking": 5,
+    "bomb": 10,
+    "bounce": 30,
+    "scatter": 20
+  }
 
   this.init = function(scene, camera_){
     camera = camera_;
@@ -76,6 +88,8 @@ var Player = function (position_, world_) {
 
   this.setLoadout = function(l){
     loadout = l;
+    loadout.magazine = shotsLeft[loadout.name]
+    document.getElementById('snowballCount').innerHTML = loadout.magazine;
   }
 
   this.isLocked = function(){
@@ -89,8 +103,8 @@ var Player = function (position_, world_) {
       vector.applyQuaternion(camera.quaternion);
       
       loadout.loadStatus = 0;
-      loadout.magazine -= 1;
-      document.getElementById('snowballCount').innerHTML = loadout.magazine;
+      shotsLeft[loadout.name] -= 1;
+      document.getElementById('snowballCount').innerHTML = shotsLeft[loadout.name];
       return vector;
     }
     return false;
