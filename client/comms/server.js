@@ -141,7 +141,7 @@ var Server = function (world_) {
         client.sendAnnouncement("loadout updated to: " + client.loadout.name);
       }
       if(data.message){
-        sendMessage(client, data.message);
+        handleMessage(client, data.message);
       }
       if(data.launch){
         launch(client, new THREE.Vector3(...data.launch.angle));
@@ -336,9 +336,26 @@ var Server = function (world_) {
     }});
   }
 
+  function handleMessage(sender, message){
+    if(message[0] == '/'){
+      // this is a command
+      // TODO parse commands, have them do things etc
+      sender.sendAnnouncement("command '"+message+"' not recognized");
+    }else{
+      // normal message. Share with others.
+      sendMessage(sender, message);
+    }
+  }
+
   function sendMessage(sender, messageText){
     worldState.clients.forEach(function(client){
       client.conn.send({message:{from: sender.name, text: messageText}});
+    });
+  }
+
+  function announce(text){
+    worldState.clients.forEach(function(client){
+      client.sendAnnouncement(text);
     });
   }
 
@@ -393,6 +410,71 @@ var Server = function (world_) {
       await sleep(10);
       worldStep10ms();
       this.sendUpdates();
+    }
+  })();
+
+
+  function resetAllClients(){
+    worldState.clients.forEach(function(client){
+      client.assailants = [];
+      client.victims = [];
+      // todo: when client loadout status is stored on server,
+      // reset their magazine etc
+    });
+    updateLeaderboard();
+  }
+
+  function respawnAllClients(){
+    worldState.clients.forEach(function(client){
+      respawn(client);
+    });
+  }
+
+  function andTheWinnerIs(){
+    worldState.clients.sort(function(a,b){
+      let ascore = (a.assailants.length)/((a.victims.length)+1);
+      let bscore = (b.assailants.length)/((b.victims.length)+1);
+      return ascore - bscore;
+    });
+    return worldState.clients[0];
+  }
+
+  // on instantiation, start game:
+  (async () => {
+    while ("Vincent" > "Michael") {
+
+      announce("game begins in 15 seconds");
+      await sleep(1000 * 10); 
+      announce("game begins in 5 seconds");
+      await sleep(1000 * 5);
+      resetAllClients();
+      // redraw the world? switch to different world idk
+      // TODO: interactive choose-next-map thing. maybe thru the chat?
+      // ie, vote for 1. stay here, 2. specific other map, 3. random ?
+      // vote with command syntax: leading '/': "/1" votes to stay here
+      respawnAllClients();
+
+      // game begins
+      announce("game starting now!");
+      await sleep(1000 * 60);
+      announce("4 minutes remain");
+      //await sleep(1000 * 60);
+      announce("3 minutes remain");
+      //await sleep(1000 * 60);
+      announce("3 minutes remain");
+      //await sleep(1000 * 60);
+      announce("1 minute remains");
+      //await sleep(1000 * 50);
+      announce("10 seconds remain");
+      await sleep(1000 * 10);
+      announce("game over!");
+      // game ends
+      // disable collision detection ?
+      let winner = andTheWinnerIs();
+      announce("and the winner is... " + winner.name + "! with " +
+        winner.victims.length + " hits and " + winner.assailants.length + " deaths.");
+      await sleep(1000 * 2);
+      
     }
   })();
 
