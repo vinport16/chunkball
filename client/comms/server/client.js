@@ -1,9 +1,11 @@
 import {Loadout} from './loadout.js';
 
+/*
+this is the client class that the server uses
+to keep track of clints - different from Client
+in client/client.js (sorry for any confusion here)
+*/
 
-// this is the client struct that the server uses
-// to keep track of clints - different from Client
-// in client.js (sorry for any confusion here)
 var Client = function (id_, conn_) {
   this.id = id_;
   this.conn = conn_;
