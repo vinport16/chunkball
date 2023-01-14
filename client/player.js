@@ -75,7 +75,6 @@ var Player = function (position_, world_) {
   }
 
   this.setLoadout = function(l){
-    console.log(l)
     loadout = l;
     document.getElementById('snowballCount').innerHTML = loadout.magazine;
   }
