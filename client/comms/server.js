@@ -245,7 +245,7 @@ var Server = function (world_) {
   function sendNameUpdateFor(client){
     worldState.clients.forEach(function(other){
       if(other !== client){
-        other.conn.send({nameUpdate:{id: client.id, username: client.name}});
+        other.conn.send({nameUpdate:{id: client.id, username: client.name, golden: client.goldenTag}});
       }
     });
   }
@@ -371,6 +371,25 @@ var Server = function (world_) {
     return worldState.clients[0];
   }
 
+  var lastWinner = false;
+
+  function setWinnerTag(winner){
+    if(winner == lastWinner){
+      winner.sendAnnouncement("you have retained the golden tag!");
+    }else{
+      if(lastWinner && !lastWinner.removed){
+        // remove tag from lastWinner
+        lastWinner.goldenTag = false;
+        sendNameUpdateFor(lastWinner);
+      }
+      // give tag to winner
+      winner.goldenTag = true;
+      sendNameUpdateFor(winner);
+      winner.sendAnnouncement("you have been awarded a golden tag!");
+    }
+    lastWinner = winner;
+  }
+
   roundManager.setAnnounceFunc(announce);
   roundManager.onRoundStart(function(){
     resetAllClients();
@@ -385,6 +404,7 @@ var Server = function (world_) {
     let winner = andTheWinnerIs();
     announce("and the winner is... " + winner.name + "! with " +
       winner.victims.length + " hits and " + winner.assailants.length + " deaths.");
+    setWinnerTag(winner);
   });
 
   roundManager.begin();

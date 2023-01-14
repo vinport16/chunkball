@@ -77,6 +77,7 @@ var Client = function (world_, scene_) {
       if(data.nameUpdate){
         let update = data.nameUpdate;
         agents[update.id].setName(update.username);
+        agents[update.id].setGoldenTag(update.golden);
         agents[update.id].updateNameTag();
       }
       if(data.colorUpdate){
