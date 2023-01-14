@@ -1,3 +1,5 @@
+var parseMagicaVoxel = require('parse-magica-voxel');
+
 var square_width = 10;
 var view_position = { x: -20, y: -2 };
 var view_height = 0;
@@ -417,6 +419,7 @@ var brush_select = document.getElementById("brush");
 
 var jsonImport = document.getElementById("jsonImport");
 var jsonExport = document.getElementById("jsonExport");
+var voxImport = document.getElementById("voxImport")
 var addColor = document.getElementById("addNewColor");
 var colorSelect = document.getElementById("colorSelect");
 
@@ -653,6 +656,95 @@ jsonExport.onclick = function () {
 
 }
 
+function loadParsedVox(voxJson){
+  let e = map.exists;
+
+  // .vox file has  256 colors, but we don't want to store all of these colors in the mapFile. 
+  // Instead, store the mapping between the color reference in the .vox file vs the mapFile
+  var colorMapping = {}
+
+  // Create a blank map to fill in later
+  map = []
+
+  if(voxJson["SIZE"] instanceof Array){
+    alert("Please union the objects in the .vox file before uploading.")
+    return;
+  }
+
+  for(let x = 0; x < voxJson["SIZE"].z; x++){
+    map.push([]);
+    for(let y = 0; y < voxJson["SIZE"].x; y++){
+      map[x].push([]);
+      for(let z = 0; z < voxJson["SIZE"].y; z++){
+        map[x][y].push([]);
+      }
+    }
+  }
+
+  // Populate the filled in squares. The value in the map that represents that square is the index of the color in the mapFile. 
+  function populateMap(coordinate){
+    var newColorIndex = colorMapping[coordinate.c]
+    if (newColorIndex == null){
+      colorMapping[coordinate.c] = Object.keys(colorMapping).length + 1;
+      newColorIndex = colorMapping[coordinate.c];
+    }
+    map[coordinate.z][coordinate.x][coordinate.y] = newColorIndex;
+
+  }
+  voxJson["XYZI"].forEach(populateMap)
+
+  // Populate the colors from the color mapping
+  colors = new Array(Object.keys(colorMapping) + 1)
+  colors[0] = emptyColor
+
+  // Convert the RGB value to a hex color
+  function rgba2hex(r, g, b) {
+    hex = "#" + 
+    (r | 1 << 8).toString(16).slice(1) +
+    (g | 1 << 8).toString(16).slice(1) +
+    (b | 1 << 8).toString(16).slice(1) 
+
+    return hex;
+  }
+
+  function populateColors(colorMappingKey){
+    colorIndex = colorMapping[colorMappingKey]
+    voxColor = voxJson["RGBA"][colorMappingKey - 1]  
+    colorHex = rgba2hex(voxColor.r, voxColor.g, voxColor.b)
+    colors[colorIndex] = [colorHex, 0.1]
+  }
+
+  Object.keys(colorMapping).forEach(populateColors);
+
+  // Remove the existing colors from the UI
+  var colorParent = document.getElementById("colorSelect");
+  while (colorParent.firstChild) {
+    colorParent.removeChild(colorParent.firstChild);
+  }
+
+  // Add the imported colors to the UI
+  for(var c in colors){
+    addColorDiv(colors[c], "");
+  }
+
+  map.exists = e;
+
+  drawMap();
+
+}
+
+voxImport.onclick = function () {
+  let reader = new FileReader();
+  reader.onload = function (event) {
+    let contents = event.target.result;
+    console.log("in vox onclick")
+    voxJson = parseMagicaVoxel(contents)
+    loadParsedVox(voxJson);
+    console.log("done loading vox")
+  }
+  reader.readAsArrayBuffer(file.files[0]);
+}
+
 insert_layer.onclick = function () {
   saveState();
   map.splice(view_height + 1, 0, []);
@@ -860,7 +952,12 @@ function addColorDiv(colorInfo, spawnTeamText) {
 
   var newColorTooltip = document.createElement("span");
 
-  newColorTooltip.innerHTML = color + ", " + range;
+  if(color == "white"){
+    newColorTooltip.innerHTML = "Eraser"
+  }else{
+    newColorTooltip.innerHTML = color + ", " + range;
+  }
+
   if (colors.length % 5 == 1) {
     newColorTooltip.setAttribute("class", "tooltipText tooltipRight");
   } else if (colors.length % 5 == 0) {
@@ -872,6 +969,12 @@ function addColorDiv(colorInfo, spawnTeamText) {
 
   document.getElementById(color).appendChild(newColorTooltip);
 
+  if(color == "white"){
+    var eraserImage = document.createElement("img");
+    eraserImage.setAttribute("id", color);
+    eraserImage.setAttribute("src", "./32px-Eraser_icon.svg.png")
+    document.getElementById(color).appendChild(eraserImage);
+  }
 }
 
 for (var i = 0; i < brush.length; i++) {
