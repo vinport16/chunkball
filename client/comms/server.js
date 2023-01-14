@@ -59,7 +59,6 @@ var Server = function (world_) {
           client.loadoutIDX = 0;
         }
         client.loadout = client.unlockedLoadouts[client.loadoutIDX];
-        console.log(client.loadout)
         announceLoadout(client);
         client.sendAnnouncement("loadout updated to: " + client.loadout.name + "; Shots Left: " + client.loadout.magazine);
       }
