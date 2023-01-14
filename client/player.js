@@ -26,7 +26,7 @@ var Player = function (position_, world_) {
     name: "scout",
     reloadTime:100,
     loadStatus:100,
-    magazine:50,
+    magazine:300,
     maxMagazine:300,
   };
 
