@@ -10,6 +10,7 @@ var Loadout = function (type_) {
       launchSpeed: 40, // blocks per second
       projectileRadius: 0.12,
       reloadTime: 100,
+      magazine: 100,
       maxMagazine: 500,
       launch: function(client, worldState){
         let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
@@ -23,6 +24,7 @@ var Loadout = function (type_) {
       launchSpeed: 120,
       projectileRadius: 0.06,
       reloadTime: 1000,
+      magazine: 50,
       maxMagazine: 50,
       launch: function(client, worldState){
         let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
@@ -36,6 +38,7 @@ var Loadout = function (type_) {
       launchSpeed: 25,
       projectileRadius: 0.1,
       reloadTime: 500,
+      magazine: 40,
       maxMagazine: 100,
       launch: function(client, worldState){
         let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
@@ -54,6 +57,7 @@ var Loadout = function (type_) {
       launchSpeed: 35,
       projectileRadius: 0.8,
       reloadTime: 300,
+      magazine: 100,
       maxMagazine: 300,
       launch: function(client, worldState){
         let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
@@ -67,6 +71,7 @@ var Loadout = function (type_) {
       launchSpeed: 13,
       projectileRadius: 0.18,
       reloadTime: 1700,
+      magazine: 10,
       maxMagazine: 50,
       launch: function(client, worldState){
         let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
@@ -81,6 +86,7 @@ var Loadout = function (type_) {
       launchSpeed: 17,
       projectileRadius: 0.15,
       reloadTime: 1000,
+      magazine: 20,
       maxMagazine: 50,
       launch: function(client, worldState){
         let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
@@ -104,6 +110,7 @@ var Loadout = function (type_) {
       launchSpeed: 25,
       projectileRadius: 0.11,
       reloadTime: 600,
+      magazine: 40,
       maxMagazine: 100,
       launch: function(client, worldState){
         let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
@@ -163,6 +170,7 @@ var Loadout = function (type_) {
   this.launchSpeed = proto.launchSpeed;
   this.projectileRadius = proto.projectileRadius;
   this.reloadTime = proto.reloadTime;
+  this.magazine = proto.magazine;
   this.maxMagazine = proto.maxMagazine;
 
   this.launch = proto.launch;

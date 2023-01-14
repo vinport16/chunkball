@@ -1,3 +1,4 @@
+import { LoaderUtils } from '../three.module.js';
 import {Loadout} from './server/loadout.js';
 
 /*
@@ -17,27 +18,18 @@ var Client = function (id_, conn_) {
   this.removed = false;
   this.isTeleporting = false;
   this.loadoutIDX = 0;
-  this.loadout = new Loadout(Loadout.SCOUT);
   //TODO: Remove the advanced loadouts when we have a way to earn the in-game
   this.unlockedLoadouts = [
-    Loadout.SCOUT,
-    Loadout.BOUNCE,
-    Loadout.BOMB,
-    Loadout.SNIPER,
-    Loadout.SCATTER,
-    Loadout.HEAVY,
-    Loadout.SEEKING,
+    new Loadout(Loadout.SCOUT),
+    new Loadout(Loadout.BOUNCE),
+    new Loadout(Loadout.BOMB),
+    new Loadout(Loadout.SNIPER),
+    new Loadout(Loadout.SCATTER),
+    new Loadout(Loadout.HEAVY),
+    new Loadout(Loadout.SEEKING)
   ];
+  this.loadout = this.unlockedLoadouts[0];
 
-  this.shotsLeft = {
-    "scout": 50,
-    "sniper": 50,
-    "heavy": 20,
-    "seeking": 5,
-    "bomb": 10,
-    "bounce": 30,
-    "scatter": 20
-  }
 
 
   this.assailants = []; // other clients, or strings: ie "fell"
@@ -146,10 +138,10 @@ var Server = function (world_) {
         if(client.loadoutIDX >= client.unlockedLoadouts.length){
           client.loadoutIDX = 0;
         }
-        client.loadout = new Loadout(client.unlockedLoadouts[client.loadoutIDX]);
+        client.loadout = client.unlockedLoadouts[client.loadoutIDX];
         console.log(client.loadout)
         announceLoadout(client);
-        client.sendAnnouncement("loadout updated to: " + client.loadout.name + "; Shots Left: " + client.shotsLeft[client.loadout.name]);
+        client.sendAnnouncement("loadout updated to: " + client.loadout.name + "; Shots Left: " + client.loadout.magazine);
       }
       if(data.message){
         sendMessage(client, data.message);
@@ -231,7 +223,7 @@ var Server = function (world_) {
   }
 
   function launch(client, angle){
-    client.shotsLeft[client.loadout.name] -= 1;
+    client.loadout.magazine -= 1;
     client.direction = angle;
     client.loadout.launch(client, worldState);
   }
@@ -359,7 +351,7 @@ var Server = function (world_) {
       name: client.loadout.name,
       reloadTime: client.loadout.reloadTime,
       loadStatus: 0,
-      magazine: client.shotsLeft[client.loadout.name],
+      magazine: client.loadout.magazine,
       maxMagazine: client.loadout.maxMagazine,
     }})
   }
