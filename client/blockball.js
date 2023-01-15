@@ -33,13 +33,12 @@ setup.onReady(function () {
 
   if (communication.isServing()) {
 
-    server = new Server(world);
+    let catalog = setup.getMapCatalog();
+    server = new Server(catalog);
 
     communication.onConnect(function (conn) {
       server.addClient(conn);
     });
-
-    world.populateWorldFromMap(JSON.parse(setup.getMapFile()));
 
     let channel = new Channel().getSides();
     client.connectServer(channel[0], player);
@@ -48,6 +47,11 @@ setup.onReady(function () {
     client.setColor(communication.getPlayerColor());
     chat = new Chat(channel[0]);
     leaderboard = new Leaderboard(channel[0]);
+
+    world.setRequestChunkFunc(function(p){
+      channel[0].send({requestChunk:{position:p.toArray()}});
+    });
+    world.fullRefresh();
 
   } else {
 
@@ -115,7 +119,6 @@ function init() {
   var startButton = document.getElementById('startButton');
 
   startButton.addEventListener('click', function () {
-    var username = document.getElementById('userName').value;
     player.play();
     setPlayUI();
   }, false);

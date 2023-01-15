@@ -183,6 +183,8 @@ var World = function (chunkSize_, renderRadius_) {
   // Read a blockball map file and create chunks based on the chunksize
   // TODO: validate input
   this.populateWorldFromMap = function (mapContents) {
+    this.fullRefresh();
+    
     var oldMap = mapContents["map"]
     var map = flipMap(oldMap)
 
@@ -220,14 +222,20 @@ var World = function (chunkSize_, renderRadius_) {
     }
   }
 
-  this.fullRefresh = function () {
+  this.fullRefresh = function (scene = false) {
+    // if the world is being rendered (client side)
+    if(scene){
+      // un-render and remove from scene all chunk meshes
+      Object.keys(chunkMap).forEach(function(chunkKey){
+        chunkMap[chunkKey].unbuild(scene);
+      });
+    }
     chunkMap = {};
     visibleChunkCache = [];
     visibleChunkCacheCenter = null;
   }
 };
 
-//World.prototype = Object.create( Object.prototype );
-//World.prototype.constructor = World;
+World.prototype.constructor = World;
 
 export { World };
