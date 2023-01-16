@@ -3,8 +3,8 @@ An Agent controls the way other players are represented graphically in the scene
 An agent has:
 - model (cylindrical body)
 - nameTag (text floating above model)
-- TODO: smaller cylinder pointing in the direction
-  they are looking, not sure what to call this
+- 'face' smaller cylinder pointing in the direction
+  they are looking
 */
 var Agent = function (scene_) {
   
@@ -18,6 +18,8 @@ var Agent = function (scene_) {
   var model;
   var nameTag;
   var face;
+
+  var goldenTag = false;
 
   this.setClass = function(c){
     playerClass = c;
@@ -33,6 +35,10 @@ var Agent = function (scene_) {
 
   this.getPosition = function(){
     return model.position.clone();
+  }
+
+  this.setGoldenTag = function(golden){
+    goldenTag = golden;
   }
 
   this.draw = function(){
@@ -106,7 +112,7 @@ var Agent = function (scene_) {
     context.font = "Bold " + fontsz + "px " + "Ariel";
 
     // get size data (height depends only on font size)
-    let metrics = context.measureText(text);
+    let metrics = context.measureText(" " + text + " "); // add padding on sides
     let textWidth = metrics.width;
 
     // background color
@@ -115,11 +121,22 @@ var Agent = function (scene_) {
     // border color
     context.strokeStyle = "rgba(" + 0 + "," + 0 + "," +
       0 + "," + 0 + ")";
+
+    context.lineWidth = 0;
+    if(goldenTag){
+      context.fillStyle = "rgba(" + 20 + "," + 20 + "," +
+        20 + "," + 0.7 + ")";
+      context.strokeStyle = "rgba(255, 252, 58, 1.0)";
+      context.lineWidth = 2;
+    }
     roundRect(context, canvas.width / 2 - textWidth / 2, 0, textWidth, fontsz * 1.4, 6);
     // 1.4 is extra height factor for text below baseline: g,j,p,q.
 
     // text color
     context.fillStyle = "rgba(0, 0, 0, 1.0)";
+    if(goldenTag){
+      context.fillStyle = "rgba(255, 252, 58, 1.0)";
+    }
     context.textAlign = "center";
     context.fillText(text, canvas.width / 2, fontsz);
 

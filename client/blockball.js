@@ -106,10 +106,10 @@ function init() {
   scene.add(light);
 
   // for graphics testing
-  let a = new Agent(scene);
-  a.setName("test player");
-  a.draw();
-  a.updatePosition(new THREE.Vector3(4.5, 4.5, 1.5), new THREE.Quaternion(0.01,0.01,1,0.01));
+  // let a = new Agent(scene);
+  // a.setName("test player");
+  // a.draw();
+  // a.updatePosition(new THREE.Vector3(4.5, 4.5, 1.5), new THREE.Quaternion(0.01,0.01,1,0.01));
 
   add_crosshair(camera);
 
