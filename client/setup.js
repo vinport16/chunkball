@@ -74,6 +74,17 @@ var Setup = function () {
     ourMaps.classList.add("selectedMapInput"); // we use this by default
     let yourMap = fileSelect();
     element.appendChild(ourMaps);
+    if(mapSelects.length != 0){
+      // first map select can't be removed
+      let remove = document.createElement("button");
+      remove.appendChild(document.createTextNode("remove"));
+      remove.classList.add("remove-map");
+      remove.onclick = function(){
+        element.parentNode.removeChild(element);
+        mapSelects = mapSelects.filter(u => u != unit);
+      }
+      element.appendChild(remove);
+    }
     element.appendChild(document.createElement('br'));
     element.appendChild(yourMap);
     unit.element = element;
