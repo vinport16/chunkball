@@ -15,8 +15,10 @@ var Setup = function () {
   // THIS IS THE LIST OF DEFAULT MAP OPTIONS
   // the first one will be the default default map
   var mapAddresses = {
+    "splash": "../maps/splash.json",
     "magica": "../maps/magicamap.json",
     "building": "../maps/building.json",
+    "blobland": "../maps/floating_blobland.json",
     "first town": "../maps/firstTown.json",
     "small city": "../maps/smallCity.json",
     "tiny test map": "../maps/testSpawn.json",
