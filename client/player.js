@@ -145,8 +145,8 @@ var Player = function (position_, world_) {
 
     let above = [];
     checkspots.forEach(function(spot) {
-      above.push(spot.clone().add(new THREE.Vector3(0, 0.75, 0))); // middle of player
-      above.push(spot.clone().add(new THREE.Vector3(0, 1.50, 0))); // top of player
+      above.push(spot.clone().add(new THREE.Vector3(0, 0.85, 0))); // middle of player
+      above.push(spot.clone().add(new THREE.Vector3(0, 1.75, 0))); // top of player
     });
 
     checkspots = checkspots.concat(above);
@@ -223,6 +223,9 @@ var Player = function (position_, world_) {
       if (this.isPositionColliding(ztester)) {
         newMove.z = 0;
       }
+
+      newMove.multiplyScalar(0.99); // friction prevents unchecked recursion...
+
       return this.nextPosition(fauxPosition.clone(), newMove);
 
     }
