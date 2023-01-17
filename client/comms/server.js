@@ -1,4 +1,5 @@
 import {Client} from './server/client.js';
+import {World} from '../world.js';
 import {Loadout} from './server/loadout.js';
 import {RoundManager} from './server/roundManager.js';
 
@@ -6,13 +7,18 @@ import {RoundManager} from './server/roundManager.js';
 Server manages connections to client peers
 */
 
-var Server = function (world_) {
+var Server = function (catalog_) {
   
+  var mapCatalog = catalog_;
+
   var worldState = {
-    world: world_,
+    world: new World(10, 6),
+    refreshing: true,
     clients: [],
     projectiles: [],
   }
+
+  refreshMap();
 
   var fallDepthLimit = -30; // if you fall off the world, respawn at y=-30
 
@@ -132,6 +138,17 @@ var Server = function (world_) {
     });
   }
 
+  function refreshMap(){
+    worldState.refreshing = true;
+    mapCatalog.prepareNextWorld(worldState.world).then(function(){
+      worldState.refreshing = false;
+      worldState.clients.forEach(function(client){
+        client.conn.send({clearWorld: true});
+        respawn(client);
+      });
+    });
+  }
+
   var playersAt = function(projectile){
     return worldState.clients.filter(function(client){
       return client.hitBy(projectile);
@@ -226,6 +243,13 @@ var Server = function (world_) {
   }
 
   function respawn(client){
+
+    // if world is refreshing there may be no valid spawn locations. send to origin.
+    if(worldState.refreshing){
+      client.isTeleporting = true;
+      client.conn.send({moveTo:[0,0,0]});
+      return;
+    }
     // Valid spawn locations are stored in each chunk
     //check if spawn chunk is valid
     var spawnChunk = null
@@ -405,6 +429,8 @@ var Server = function (world_) {
     announce("and the winner is... " + winner.name + "! with " +
       winner.victims.length + " hits and " + winner.assailants.length + " deaths.");
     setWinnerTag(winner);
+    refreshMap();
+    announce("The next round will be played in: "+mapCatalog.getCurrentWorldName());
   });
 
   roundManager.begin();

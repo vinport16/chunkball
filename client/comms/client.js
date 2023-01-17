@@ -104,6 +104,9 @@ var Client = function (world_, scene_) {
         let chunk = new Chunk(p, blocks, colors);
         world.setChunk(chunk);
       }
+      if(data.clearWorld){
+        world.fullRefresh(scene);
+      }
     });
 
     function sleep(ms) {

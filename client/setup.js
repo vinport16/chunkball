@@ -1,3 +1,5 @@
+import {MapCatalog} from './mapCatalog.js';
+
 /*
 Setup is instantiated before any connections are made or game is started. Performs
 server setup.
@@ -10,53 +12,118 @@ var Setup = function () {
     params[key] = value
   }
 
+  // THIS IS THE LIST OF DEFAULT MAP OPTIONS
+  // the first one will be the default default map
+  var mapAddresses = {
+    "magica": "../maps/magicamap.json",
+    "building": "../maps/building.json",
+    "first town": "../maps/firstTown.json",
+    "small city": "../maps/smallCity.json",
+    "tiny test map": "../maps/testSpawn.json",
+  };
+
+  var mapSelects = [];
   var mapFile = false;
-  var ready = false;
+  var started = false;
   var onReadyFunc;
 
   if(params.serving){
-    console.log("starting server", params.serving);
+    document.getElementById('mapSelect').hidden = false;
+    addMapUnit();
 
-    let doc = document.getElementById("mapfile");
-    doc.addEventListener("change", function(){
-      var file = doc.files[0];
-      var reader = new FileReader();
-      reader.onload = function(event) {
-        let text = event.target.result;
-        // check if text is valid json formatte map?
-        mapFile = text;
-      }
-      if(file){
-        reader.readAsText(file);
-      }
-    });
-
-    let select = document.getElementById("selectedMap");
-    let useSelectedMap = function(){
-      let xmlHttp = new XMLHttpRequest();
-      xmlHttp.onreadystatechange = function() { 
-          if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-              mapFile = xmlHttp.responseText;
-      }
-      xmlHttp.open("GET", select.value, true); // true for asynchronous 
-      xmlHttp.send(null);
-    }
-    select.addEventListener("change", useSelectedMap);
-    useSelectedMap();
+    document.getElementById("addMap").onclick = addMapUnit;
 
   }else if(params.joining){
-    console.log("joining server", params.joining);
-    document.getElementById('mapSelect').hidden = true;
+    // do nothing
   }else{
-    console.log("neither serving nor joining...");
+    console.error("neither serving nor joining...");
   }
 
   document.getElementById("startButton").onclick = function(){
-    if (!ready && (params.joining || mapFile)) {
+    if (!started) {
       document.getElementById('mapSelect').hidden = true;
       onReadyFunc();
-      ready = true;
+      started = true;
     }
+  }
+
+  function fileSelect(){
+    let upload = document.createElement("input");
+    upload.type = "file";
+    upload.enctype = "multipart/form-data";
+    return upload;
+  }
+
+  function mapsSelect(maps){
+    let select = document.createElement("select");
+    Object.keys(maps).forEach(function(mapName){
+      let op = document.createElement("option");
+      select.appendChild(op);
+      op.value = maps[mapName];
+      let text = document.createTextNode(mapName);
+      op.appendChild(text);
+    });
+    return select;
+  }
+
+  function mapSelectUnit(){
+    let unit = {};
+    let element = document.createElement("div");
+    element.classList.add("mapSelectUnit");
+    let ourMaps = mapsSelect(mapAddresses);
+    ourMaps.classList.add("selectedMapInput"); // we use this by default
+    let yourMap = fileSelect();
+    element.appendChild(ourMaps);
+    if(mapSelects.length != 0){
+      // first map select can't be removed
+      let remove = document.createElement("button");
+      remove.appendChild(document.createTextNode("remove"));
+      remove.classList.add("remove-map");
+      remove.onclick = function(){
+        element.parentNode.removeChild(element);
+        mapSelects = mapSelects.filter(u => u != unit);
+      }
+      element.appendChild(remove);
+    }
+    element.appendChild(document.createElement('br'));
+    element.appendChild(yourMap);
+    unit.element = element;
+
+    // this unit has internal map select logic built in.
+    
+    var selected = {file: false, address: ourMaps.value, name: Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText};
+
+    yourMap.addEventListener("change", function(){
+      var file = yourMap.files[0];
+      if(file){
+        selected.file = file;
+        selected.address = false;
+        selected.name = file.name;
+      }
+      ourMaps.classList.remove("selectedMapInput");
+      yourMap.classList.add("selectedMapInput");
+    });
+
+    ourMaps.addEventListener("change", function(){
+      selected.file = false;
+      selected.address = ourMaps.value;
+      selected.name = Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText;
+      yourMap.classList.remove("selectedMapInput");
+      ourMaps.classList.add("selectedMapInput");
+    });
+
+    unit.getSelected = function(){
+      // return {file: file object or false, address: string or false, name: string}; TODO
+      return selected;
+    }
+    return unit;
+  }
+
+  function addMapUnit(){
+    let mapSelectElement = document.getElementById('mapSelect');
+    let unit = mapSelectUnit();
+    mapSelects.push(unit);
+    mapSelectElement.appendChild(unit.element);
   }
 
   this.isServing = function(){
@@ -73,6 +140,14 @@ var Setup = function () {
 
   this.getMapFile = function(){
     return mapFile;
+  }
+
+  this.getMapCatalog = function(){
+    let maps = [];
+    mapSelects.forEach(function(unit){
+      maps.push(unit.getSelected());
+    });
+    return new MapCatalog(maps);
   }
 
   this.onReady = function(f){
