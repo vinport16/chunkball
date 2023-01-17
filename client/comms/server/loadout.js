@@ -145,16 +145,15 @@ var Loadout = function (type_) {
     let canMoveY = world.noBlockAt(p.clone().setY(p.y + inch)) && world.noBlockAt(p.clone().setY(p.y - inch));
     let canMoveZ = world.noBlockAt(p.clone().setZ(p.z + inch)) && world.noBlockAt(p.clone().setZ(p.z - inch));
 
-    if(!canMoveX){
-      return projectile.getVelocity().multiply(new THREE.Vector3(-1,1,1));
-    }else if(!canMoveY){
-      return projectile.getVelocity().multiply(new THREE.Vector3(1,-1,1));
-    }else if(!canMoveZ){
-      return projectile.getVelocity().multiply(new THREE.Vector3(1,1,-1));
-    }else{
-      // didn't hit wall: no bounce: same velocity
-      return projectile.getVelocity();
-    }
+    let direction = [canMoveX, canMoveY, canMoveZ].map(function(canMove){
+      if(canMove){
+        return 1;
+      }else{
+        return -1;
+      }
+    });
+
+    return projectile.getVelocity().multiply(new THREE.Vector3(...direction));
   }
   
   var proto = types[type_];
