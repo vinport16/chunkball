@@ -11,6 +11,11 @@ var Agent = function (scene_) {
   var scene = scene_;
   var direction = new THREE.Quaternion();
 
+  // for position interpolation
+  var velocity = new THREE.Vector3();
+  var lastPositionUpdate = Date.now();
+  var lastPosition = new THREE.Vector3();
+
   var color = new THREE.Color("red");
   var playerClass = "scout";
   var name = "defaultname";
@@ -92,10 +97,23 @@ var Agent = function (scene_) {
 
   var yoffset = 2 - (1.75/2) - 0.5;
   this.updatePosition = function(p, facing) {
+    // calc velocity
+    velocity = p.clone().sub(lastPosition).divideScalar(Date.now() - lastPositionUpdate);
+    // update last position
+    lastPosition = p.clone();
+    lastPositionUpdate = Date.now();
+
     // p is camera position, 1.5 above ground
     // model position is in the center of the cylinder
     model.position.set(...p.setY(p.y - yoffset).toArray());
     face.quaternion.set(...facing.toArray());
+  }
+
+  var lastFrameUpdate = Date.now();
+  this.animate = function(){
+    let deltaT = Date.now() - lastFrameUpdate;
+    model.position.add(velocity.clone().multiplyScalar(deltaT));
+    lastFrameUpdate = Date.now();
   }
 
   this.updateColor = function(c) {

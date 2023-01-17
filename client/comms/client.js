@@ -152,6 +152,14 @@ var Client = function (world_, scene_) {
     }
   }
 
+  this.animate = function(){
+    Object.keys(agents).forEach(function(agentId){
+      if(agents[agentId]){
+        agents[agentId].animate();
+      }
+    });
+  }
+
 };
 
 Client.prototype.constructor = Client;

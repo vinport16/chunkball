@@ -256,6 +256,7 @@ function animate() {
   requestAnimationFrame(animate);
   player.animate();
   world.draw(scene, player);
+  client.animate();
   renderer.render(scene, camera);
 }
 
