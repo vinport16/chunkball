@@ -354,20 +354,18 @@ var Server = function (catalog_) {
     moveProjectiles10ms();
   }
 
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
   // on instantiation, start sending updates to clients (if any):
-  (async () => {
-    while ("Vincent" > "Michael") {
-      await sleep(10);
-      worldStep10ms();
-      await sleep(10);
-      worldStep10ms();
+  const timer = new Worker('./comms/timer.js');
+  timer.postMessage({setInterval: 10});
+
+  var sendUpdates = true;
+  timer.onmessage = (e) => {
+    worldStep10ms();
+    if(sendUpdates){
       this.sendUpdates();
     }
-  })();
+    sendUpdates = !sendUpdates;
+  }
 
 
   function resetAllClients(){
