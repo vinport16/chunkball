@@ -408,6 +408,7 @@ var Server = function (catalog_) {
     // ie, vote for 1. stay here, 2. specific other map, 3. random ?
     // vote with command syntax: leading '/': "/1" votes to stay here
     respawnAllClients();
+    roundManager.setRoundDuration(mapCatalog.getCurrentWorldDuration())
   });
   roundManager.onRoundEnd(function(){
     // disable collision detection ?

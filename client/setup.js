@@ -24,6 +24,13 @@ var Setup = function () {
     "tiny test map": "../maps/testSpawn.json",
   };
 
+  var roundDurations = {
+    "1 Minute": 60,
+    "2 Minutes": 120,
+    "5 Minutes": 300,
+    "10 Minutes": 600
+  }
+
   var mapSelects = [];
   var mapFile = false;
   var started = false;
@@ -68,6 +75,18 @@ var Setup = function () {
     return select;
   }
 
+  function durationSelect(){
+    let duration = document.createElement("select");
+    Object.keys(roundDurations).forEach(function(durationText){
+      let op = document.createElement("option");
+      duration.appendChild(op);
+      op.value = roundDurations[durationText];
+      let text = document.createTextNode(durationText);
+      op.appendChild(text);
+    });
+    return duration;
+  }
+
   function mapSelectUnit(){
     let unit = {};
     let element = document.createElement("div");
@@ -89,11 +108,14 @@ var Setup = function () {
     }
     element.appendChild(document.createElement('br'));
     element.appendChild(yourMap);
+
+    let roundDuration = durationSelect();
+    element.appendChild(roundDuration);
     unit.element = element;
 
     // this unit has internal map select logic built in.
     
-    var selected = {file: false, address: ourMaps.value, name: Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText};
+    var selected = {file: false, address: ourMaps.value, name: Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText, duration: 60};
 
     yourMap.addEventListener("change", function(){
       var file = yourMap.files[0];
@@ -112,6 +134,10 @@ var Setup = function () {
       selected.name = Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText;
       yourMap.classList.remove("selectedMapInput");
       ourMaps.classList.add("selectedMapInput");
+    });
+
+    roundDuration.addEventListener("change", function(){
+      selected.duration = parseInt(roundDuration.value, 10);
     });
 
     unit.getSelected = function(){

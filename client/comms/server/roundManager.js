@@ -38,6 +38,10 @@ var RoundManager = function () {
     roundEndFunc = f;
   }
 
+  this.setRoundDuration = function(duration){
+    roundDuration = duration;
+  }
+
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -71,9 +75,9 @@ var RoundManager = function () {
           // begin round
           roundEndTime = false;
           roundStartTime = now;
-          lastAnnouncedTime = roundDuration + 100;
           roundStartFunc();
-          announce("round has begun!");
+          lastAnnouncedTime = roundDuration + 100;
+          announce("round has begun!" + roundDuration);
         }
 
       }else if(roundStartTime){
