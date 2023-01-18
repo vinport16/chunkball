@@ -76,6 +76,7 @@ var Player = function (position_, world_) {
 
   this.setLoadout = function(l){
     loadout = l;
+    document.getElementById('snowballCount').innerHTML = loadout.magazine;
   }
 
   this.isLocked = function(){

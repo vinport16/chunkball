@@ -17,7 +17,18 @@ var Client = function (id_, conn_) {
   this.removed = false;
   this.isTeleporting = false;
   this.loadoutIDX = 0;
-  this.loadout = new Loadout(Loadout.SCOUT);
+  //TODO: Remove the advanced loadouts when we have a way to earn the in-game
+  this.unlockedLoadouts = [
+    new Loadout(Loadout.SCOUT),
+    new Loadout(Loadout.BOUNCE),
+    new Loadout(Loadout.BOMB),
+    new Loadout(Loadout.SNIPER),
+    new Loadout(Loadout.SCATTER),
+    new Loadout(Loadout.HEAVY),
+    new Loadout(Loadout.SEEKING)
+  ];
+  this.loadout = this.unlockedLoadouts[0];
+
 
 
   this.assailants = []; // other clients, or strings: ie "fell"
@@ -38,6 +49,24 @@ var Client = function (id_, conn_) {
       return intersecting(mycenter, cylinderHeight, cylinderRadius, projectile.getPosition(), projectile.getRadius());
     }
     return false;
+  }
+
+  this.addLoadout = function(type){
+    this.unlockedLoadouts.push(new Loadout(type));
+  }
+
+  this.resetLoadouts = function(){
+    this.unlockedLoadouts.forEach(e => {
+      e.magazine = e.maxMagazine;
+    });
+  }
+
+  this.nextLoadout = function(){
+    this.loadoutIDX++;
+    if(this.loadoutIDX >= this.unlockedLoadouts.length){
+      this.loadoutIDX = 0;
+    }
+    this.loadout = this.unlockedLoadouts[this.loadoutIDX];
   }
 };
 

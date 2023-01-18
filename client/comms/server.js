@@ -22,16 +22,6 @@ var Server = function (catalog_) {
 
   var fallDepthLimit = -30; // if you fall off the world, respawn at y=-30
 
-  var loadouts = [
-    Loadout.SCOUT,
-    Loadout.BOUNCE,
-    Loadout.BOMB,
-    Loadout.SNIPER,
-    Loadout.SCATTER,
-    Loadout.HEAVY,
-    Loadout.SEEKING,
-  ];
-
   var roundManager = new RoundManager();
 
   // map of chunk -> list of clients
@@ -70,13 +60,9 @@ var Server = function (catalog_) {
         sendColorUpdateFor(client);
       }
       if(data.changeLoadout){
-        client.loadoutIDX++;
-        if(client.loadoutIDX >= loadouts.length){
-          client.loadoutIDX = 0;
-        }
-        client.loadout = new Loadout(loadouts[client.loadoutIDX]);
+        client.nextLoadout();
         announceLoadout(client);
-        client.sendAnnouncement("loadout updated to: " + client.loadout.name);
+        client.sendAnnouncement("loadout updated to: " + client.loadout.name + "; Shots Left: " + client.loadout.magazine);
       }
       if(data.message){
         handleMessage(client, data.message);
@@ -169,6 +155,7 @@ var Server = function (catalog_) {
   }
 
   function launch(client, angle){
+    client.loadout.magazine -= 1;
     client.direction = angle;
     client.loadout.launch(client, worldState);
   }
@@ -320,7 +307,7 @@ var Server = function (catalog_) {
       name: client.loadout.name,
       reloadTime: client.loadout.reloadTime,
       loadStatus: 0,
-      magazine: client.loadout.maxMagazine,
+      magazine: client.loadout.magazine,
       maxMagazine: client.loadout.maxMagazine,
     }})
   }
@@ -372,6 +359,7 @@ var Server = function (catalog_) {
     worldState.clients.forEach(function(client){
       client.assailants = [];
       client.victims = [];
+      client.resetLoadouts();
       // todo: when client loadout status is stored on server,
       // reset their magazine etc
     });
