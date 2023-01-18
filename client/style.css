@@ -14,6 +14,8 @@ body {
   -webkit-user-select: none;
   -o-user-select: none;
   user-select: none;
+
+  overflow: hidden;
 }
 
 #leaderboard {
@@ -91,8 +93,8 @@ body {
   right: 20px;
   top: 10px;
   z-index: 2;
-  width: 50%;
-  height: 40%;
+  width: 25%;
+  height: 30px;
   display: box;
   color: #ffffff;
   text-align: center;
@@ -102,7 +104,7 @@ body {
 }
 
 #bar-container {
-  width: 50%;
+  width: 100%;
   height: 30px;
   float: right;
   background-color: purple;
@@ -129,10 +131,10 @@ body {
   line-height: 20px;
 }
 
-#instructions {
+#pausedScreen {
   position: absolute;
   width: 100%;
-  height: 70%;
+  height: 100%;
   display: -webkit-box;
   display: -moz-box;
   display: box;
@@ -151,4 +153,28 @@ body {
   font-size: 14px;
   line-height: 24px;
   cursor: pointer;
+}
+
+#mapSelect {
+  height: 95%;
+  width: 250px;
+  overflow-y: scroll;
+}
+
+.mapSelectUnit {
+  background-color: rgba(100, 0, 150, 0.2);
+  padding: 4px;
+}
+
+.mapSelectUnit + .mapSelectUnit {
+    margin-top: 4px;
+}
+
+.selectedMapInput {
+  outline-style: solid;
+  outline-color: yellowgreen;
+}
+
+.remove-map {
+  float:right;
 }

@@ -1,4 +1,5 @@
 import {Client} from './server/client.js';
+import {World} from '../world.js';
 import {Loadout} from './server/loadout.js';
 import {RoundManager} from './server/roundManager.js';
 
@@ -6,13 +7,18 @@ import {RoundManager} from './server/roundManager.js';
 Server manages connections to client peers
 */
 
-var Server = function (world_) {
+var Server = function (catalog_) {
   
+  var mapCatalog = catalog_;
+
   var worldState = {
-    world: world_,
+    world: new World(10, 6),
+    refreshing: true,
     clients: [],
     projectiles: [],
   }
+
+  refreshMap();
 
   var fallDepthLimit = -30; // if you fall off the world, respawn at y=-30
 
@@ -122,6 +128,17 @@ var Server = function (world_) {
     });
   }
 
+  function refreshMap(){
+    worldState.refreshing = true;
+    mapCatalog.prepareNextWorld(worldState.world).then(function(){
+      worldState.refreshing = false;
+      worldState.clients.forEach(function(client){
+        client.conn.send({clearWorld: true});
+        respawn(client);
+      });
+    });
+  }
+
   var playersAt = function(projectile){
     return worldState.clients.filter(function(client){
       return client.hitBy(projectile);
@@ -217,6 +234,13 @@ var Server = function (world_) {
   }
 
   function respawn(client){
+
+    // if world is refreshing there may be no valid spawn locations. send to origin.
+    if(worldState.refreshing){
+      client.isTeleporting = true;
+      client.conn.send({moveTo:[0,0,0]});
+      return;
+    }
     // Valid spawn locations are stored in each chunk
     //check if spawn chunk is valid
     var spawnChunk = null
@@ -236,7 +260,7 @@ var Server = function (world_) {
   function sendNameUpdateFor(client){
     worldState.clients.forEach(function(other){
       if(other !== client){
-        other.conn.send({nameUpdate:{id: client.id, username: client.name}});
+        other.conn.send({nameUpdate:{id: client.id, username: client.name, golden: client.goldenTag}});
       }
     });
   }
@@ -321,20 +345,18 @@ var Server = function (world_) {
     moveProjectiles10ms();
   }
 
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
   // on instantiation, start sending updates to clients (if any):
-  (async () => {
-    while ("Vincent" > "Michael") {
-      await sleep(10);
-      worldStep10ms();
-      await sleep(10);
-      worldStep10ms();
+  const timer = new Worker('./comms/timer.js');
+  timer.postMessage({setInterval: 10});
+
+  var sendUpdates = true;
+  timer.onmessage = (e) => {
+    worldStep10ms();
+    if(sendUpdates){
       this.sendUpdates();
     }
-  })();
+    sendUpdates = !sendUpdates;
+  }
 
 
   function resetAllClients(){
@@ -362,6 +384,25 @@ var Server = function (world_) {
     return worldState.clients[0];
   }
 
+  var lastWinner = false;
+
+  function setWinnerTag(winner){
+    if(winner == lastWinner){
+      winner.sendAnnouncement("you have retained the golden tag!");
+    }else{
+      if(lastWinner && !lastWinner.removed){
+        // remove tag from lastWinner
+        lastWinner.goldenTag = false;
+        sendNameUpdateFor(lastWinner);
+      }
+      // give tag to winner
+      winner.goldenTag = true;
+      sendNameUpdateFor(winner);
+      winner.sendAnnouncement("you have been awarded a golden tag!");
+    }
+    lastWinner = winner;
+  }
+
   roundManager.setAnnounceFunc(announce);
   roundManager.onRoundStart(function(){
     resetAllClients();
@@ -376,6 +417,9 @@ var Server = function (world_) {
     let winner = andTheWinnerIs();
     announce("and the winner is... " + winner.name + "! with " +
       winner.victims.length + " hits and " + winner.assailants.length + " deaths.");
+    setWinnerTag(winner);
+    refreshMap();
+    announce("The next round will be played in: "+mapCatalog.getCurrentWorldName());
   });
 
   roundManager.begin();

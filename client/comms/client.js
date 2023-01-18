@@ -77,6 +77,7 @@ var Client = function (world_, scene_) {
       if(data.nameUpdate){
         let update = data.nameUpdate;
         agents[update.id].setName(update.username);
+        agents[update.id].setGoldenTag(update.golden);
         agents[update.id].updateNameTag();
       }
       if(data.colorUpdate){
@@ -103,22 +104,22 @@ var Client = function (world_, scene_) {
         let chunk = new Chunk(p, blocks, colors);
         world.setChunk(chunk);
       }
+      if(data.clearWorld){
+        world.fullRefresh(scene);
+      }
     });
 
-    function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     // on connect, start sending updates to server:
-    (async () => {
-      while ("Vincent" > "Michael") {
-        await sleep(20);
-        conn.send({updatePosition: {
+
+    const timer = new Worker('./comms/timer.js');
+    timer.postMessage({setInterval: 20});
+
+    timer.onmessage = (e) => {
+      conn.send({updatePosition: {
           position: player.getPosition().toArray(),
           direction: player.getDirection().toArray(),
         }});
-      }
-    })();
+    }
 
   }
 

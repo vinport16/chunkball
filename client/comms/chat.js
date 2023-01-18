@@ -78,7 +78,7 @@ var Chat = function(conn){
       hideMessageLog();
       document.children[0].focus();
     }else if(event.key == "Escape"){
-      // this doesn't work well...
+      // this doesn't work well... TODO issue #35
       hideMessageLog();
       document.children[0].focus();
     }
@@ -90,8 +90,6 @@ var Chat = function(conn){
       pushMessage(data.message);
     }
   });
-
-  usernameInput.addEventListener('keydown', function(event){event.stopPropagation();}, false);
 
   document.addEventListener('keydown', messageOnT, false);
   input.addEventListener('keydown', sendOnEnter, false);

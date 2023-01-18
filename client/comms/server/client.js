@@ -10,6 +10,7 @@ var Client = function (id_, conn_) {
   this.id = id_;
   this.conn = conn_;
   this.name = "username";
+  this.goldenTag = false;
   this.color = "#AA0000";
   this.position = new THREE.Vector3();
   this.direction = new THREE.Quaternion();
