@@ -60,11 +60,7 @@ var Server = function (catalog_) {
         sendColorUpdateFor(client);
       }
       if(data.changeLoadout){
-        client.loadoutIDX++;
-        if(client.loadoutIDX >= client.unlockedLoadouts.length){
-          client.loadoutIDX = 0;
-        }
-        client.loadout = client.unlockedLoadouts[client.loadoutIDX];
+        client.nextLoadout();
         announceLoadout(client);
         client.sendAnnouncement("loadout updated to: " + client.loadout.name + "; Shots Left: " + client.loadout.magazine);
       }
@@ -363,6 +359,7 @@ var Server = function (catalog_) {
     worldState.clients.forEach(function(client){
       client.assailants = [];
       client.victims = [];
+      client.resetLoadouts();
       // todo: when client loadout status is stored on server,
       // reset their magazine etc
     });

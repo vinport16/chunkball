@@ -50,6 +50,24 @@ var Client = function (id_, conn_) {
     }
     return false;
   }
+
+  this.addLoadout = function(type){
+    this.unlockedLoadouts.push(new Loadout(type));
+  }
+
+  this.resetLoadouts = function(){
+    this.unlockedLoadouts.forEach(e => {
+      e.magazine = e.maxMagazine;
+    });
+  }
+
+  this.nextLoadout = function(){
+    this.loadoutIDX++;
+    if(this.loadoutIDX >= this.unlockedLoadouts.length){
+      this.loadoutIDX = 0;
+    }
+    this.loadout = this.unlockedLoadouts[this.loadoutIDX];
+  }
 };
 
 function intersecting(cycenter, cyheight, cyradius, spcenter, spradius){
