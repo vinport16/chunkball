@@ -77,7 +77,7 @@ var RoundManager = function () {
           roundStartTime = now;
           roundStartFunc();
           lastAnnouncedTime = roundDuration + 100;
-          announce("round has begun!" + roundDuration);
+          announce("round has begun!");
         }
 
       }else if(roundStartTime){
