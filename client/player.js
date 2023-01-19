@@ -76,7 +76,7 @@ var Player = function (position_, world_) {
 
   this.setLoadout = function(l){
     loadout = l;
-    document.getElementById('snowballCount').innerHTML = loadout.magazine;
+    document.getElementById('snowballCount').innerHTML = loadout.name + ": " + loadout.magazine;
   }
 
   this.isLocked = function(){
@@ -91,7 +91,7 @@ var Player = function (position_, world_) {
       
       loadout.loadStatus = 0;
       loadout.magazine -= 1;
-      document.getElementById('snowballCount').innerHTML = loadout.magazine;
+      document.getElementById('snowballCount').innerHTML = loadout.name + ": " + loadout.magazine;
       return vector;
     }
     return false;

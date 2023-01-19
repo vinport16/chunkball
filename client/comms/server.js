@@ -90,6 +90,7 @@ var Server = function (catalog_) {
     this.introduceNewPlayer(client);
     updateLeaderboard();
     respawn(client);
+    announceLoadout(client);
   }
 
   this.sendUpdates = function(){
@@ -369,6 +370,7 @@ var Server = function (catalog_) {
   function respawnAllClients(){
     worldState.clients.forEach(function(client){
       respawn(client);
+      announceLoadout(client);
     });
   }
 
