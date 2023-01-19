@@ -100,6 +100,27 @@ var Loadout = function (type_) {
           explosion.owner = client;
           explosion.setFriendlyFire(true); // can hit self >:)
           worldState.projectiles.push(explosion);
+
+          // destroy some blocks
+          worldState.world.setBlock(newp.getPosition(), 0);
+          worldState.updateChunks.push(worldState.world.chunkAt(newp.getPosition()));
+          let p = newp.getPosition();
+          for(let x = p.x-1; x <= p.x +1; x+=1){
+            for(let y = p.y-1; y <= p.y +1; y+=1){
+              for(let z = p.z-1; z <= p.z +1; z+=1){
+                let thisp = new THREE.Vector3(x, y, z);
+                // sometimes the edges of the 3x3 cube around the
+                // projectile are left unharmed
+                if(thisp.distanceTo(p)-1 < Math.random()*5){
+                  worldState.world.setBlock(thisp, 0);
+                  let chunk = worldState.world.chunkAt(thisp);
+                  if(chunk && !worldState.updateChunks.includes(chunk)){
+                    worldState.updateChunks.push(chunk);
+                  }
+                }
+              }
+            }
+          }
         }
 
         worldState.projectiles.push(newp);

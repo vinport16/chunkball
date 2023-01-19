@@ -13,6 +13,7 @@ var Server = function (catalog_) {
 
   var worldState = {
     world: new World(10, 6),
+    updateChunks: [],
     refreshing: true,
     clients: [],
     projectiles: [],
@@ -23,11 +24,6 @@ var Server = function (catalog_) {
   var fallDepthLimit = -30; // if you fall off the world, respawn at y=-30
 
   var roundManager = new RoundManager();
-
-  // map of chunk -> list of clients
-  // representing the clients who are currently listening for updates
-  // on that chunk (within their render distance)
-  var chunkFollowers = [];
 
   var idCounter = 0;
 
@@ -93,6 +89,16 @@ var Server = function (catalog_) {
   }
 
   this.sendUpdates = function(){
+    let chunkUpdates = worldState.updateChunks.map(function(chunk){
+      return {
+        chunk: {
+          position: chunk.getPosition().toArray(),
+          blocks: chunk.getBlocks(),
+          colors: chunk.getColors(),
+        }
+      };
+    });
+    worldState.updateChunks = [];
     let allPositions = worldState.clients.map(function(client){
       return {
         id: client.id,
@@ -112,6 +118,9 @@ var Server = function (catalog_) {
         playerPositions: allPositions,
         projectilePositions: allProjectiles,
       });
+      chunkUpdates.forEach(function(update){
+        client.conn.send(update);
+      });
     });
   }
 
@@ -126,6 +135,7 @@ var Server = function (catalog_) {
 
   function refreshMap(){
     worldState.refreshing = true;
+    worldState.updateChunks = [];
     mapCatalog.prepareNextWorld(worldState.world).then(function(){
       worldState.refreshing = false;
       worldState.clients.forEach(function(client){
@@ -415,6 +425,7 @@ var Server = function (catalog_) {
     announce("and the winner is... " + winner.name + "! with " +
       winner.victims.length + " hits and " + winner.assailants.length + " deaths.");
     setWinnerTag(winner);
+
     refreshMap();
     announce("The next round will be played in: "+mapCatalog.getCurrentWorldName());
   });
