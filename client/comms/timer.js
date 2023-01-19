@@ -2,10 +2,8 @@
 var interval = 1000; // in ms
 
 onmessage = (e) => {
-  console.log('Message received from main script: ', e.data);
   if(e.data.setInterval){
     interval = e.data.setInterval;
-    console.log('updated wait time to '+interval);
   }
 }
 
