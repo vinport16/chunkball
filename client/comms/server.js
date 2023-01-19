@@ -361,6 +361,7 @@ var Server = function (catalog_) {
       client.assailants = [];
       client.victims = [];
       client.resetLoadouts();
+      announceLoadout(client);
       // todo: when client loadout status is stored on server,
       // reset their magazine etc
     });
@@ -370,7 +371,6 @@ var Server = function (catalog_) {
   function respawnAllClients(){
     worldState.clients.forEach(function(client){
       respawn(client);
-      announceLoadout(client);
     });
   }
 
