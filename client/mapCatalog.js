@@ -78,6 +78,10 @@ var MapCatalog = function (maps) {
     return worlds[currentWorldIdx].name;
   }
 
+  this.getCurrentWorldDuration = function(){
+    return worlds[currentWorldIdx].duration;
+  }
+
 };
 
 
