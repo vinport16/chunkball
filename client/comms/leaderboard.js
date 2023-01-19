@@ -51,6 +51,7 @@ var Leaderboard = function(conn){
 
     board.replaceChild(newlist, list);
     list = newlist;
+    board.style.display = "block";
   }
 
   // sort by k/(d+1)
