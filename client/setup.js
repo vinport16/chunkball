@@ -83,6 +83,10 @@ var Setup = function () {
       op.value = roundDurations[durationText];
       let text = document.createTextNode(durationText);
       op.appendChild(text);
+      // Set default to 5 min
+      if(roundDurations[durationText] == 300){
+        op.selected = true;
+      }
     });
     return duration;
   }
@@ -115,7 +119,7 @@ var Setup = function () {
 
     // this unit has internal map select logic built in.
     
-    var selected = {file: false, address: ourMaps.value, name: Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText, duration: 60};
+    var selected = {file: false, address: ourMaps.value, name: Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText, duration: 300};
 
     yourMap.addEventListener("change", function(){
       var file = yourMap.files[0];
