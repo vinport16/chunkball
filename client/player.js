@@ -17,6 +17,9 @@ var Player = function (position_, world_) {
   this.color = new THREE.Color();
   var playerJustFell = false;
 
+  // call this function when stuck in a block
+  var stuckInBlockFunc = function(){};
+
   var prevTime = performance.now();
 
   var camera = null;
@@ -109,6 +112,10 @@ var Player = function (position_, world_) {
     controls.getObject().position.setX(p.x);
     controls.getObject().position.setY(p.y);
     controls.getObject().position.setZ(p.z);
+  }
+
+  this.whenStuckInBlock = function(f){
+    stuckInBlockFunc = f;
   }
 
   this.isPositionColliding = function(position){
@@ -277,9 +284,7 @@ var Player = function (position_, world_) {
       controls.getObject().position.z = newPos.z;
 
       if (this.isPositionColliding(originalPosition)) {
-        controls.getObject().position.x = originalPosition.x;
-        controls.getObject().position.y = originalPosition.y; // THIS STOPS JUMPING THROUGH CEILINGS
-        controls.getObject().position.z = originalPosition.z;
+        stuckInBlockFunc();
       }
 
       // what was the actual delta in position? this is the actual velocity
