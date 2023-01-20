@@ -65,7 +65,6 @@ var Server = function (catalog_) {
       if(data.changeLoadout){
         client.nextLoadout();
         announceLoadout(client);
-        client.sendAnnouncement("loadout updated to: " + client.loadout.name + "; Shots Left: " + client.loadout.magazine);
       }
       if(data.message){
         handleMessage(client, data.message);
