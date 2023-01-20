@@ -17,6 +17,13 @@ var Server = function (catalog_) {
     refreshing: true,
     clients: [],
     projectiles: [],
+    breakBlockAt: function(p){
+      this.world.setBlock(p, 0);
+      let chunk = this.world.chunkAt(p);
+      if(chunk && !this.updateChunks.includes(chunk)){
+        this.updateChunks.push(chunk);
+      }
+    }
   }
 
   refreshMap();
