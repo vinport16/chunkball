@@ -32,6 +32,13 @@ var Chunk = function (position_, blocks_, colors_) {
     return colors;
   }
 
+  this.setBlock = function(p, block){
+    blocks[Math.floor(p.x)][Math.floor(p.y)][Math.floor(p.z)] = block;
+    // spawn locations may have changed...
+    validSpawnLocations = [];
+    needToFindSpawnLocations = true;
+  }
+
   this.getRandomSpawnPosition = function(){
     // If this is the first call for this chunk, populate the valid spots
     if(needToFindSpawnLocations){

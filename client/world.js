@@ -63,6 +63,15 @@ var World = function (chunkSize_, renderRadius_) {
     return chunk.blockAt(p.clone().sub(chunk.getPosition()));
   }
 
+  this.setBlock = function(p, block) {
+    let chunk = pos2chunk(p);
+    if (chunk) {
+      // can only set blocks in chunks that are already there
+      // can't build outside of existing chunks - TODO fix this
+      chunk.setBlock(p.clone().sub(chunk.getPosition()), block);
+    }
+  }
+
   this.chunkAt = function (p) {
     return pos2chunk(p);
   }
