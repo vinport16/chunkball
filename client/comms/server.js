@@ -76,6 +76,12 @@ var Server = function (catalog_) {
         client.position = new THREE.Vector3(...data.doneMovingTo);
         client.isTeleporting = false;
       }
+      if(data.stuckInBlock){
+        client.sendAnnouncement("you got stuck in a block!");
+        client.assailants.push("stuck");
+        respawn(client);
+        updateLeaderboard();
+      }
       if(data.requestChunk){
         let p = new THREE.Vector3(...data.requestChunk.position);
         sendChunk(client, p);

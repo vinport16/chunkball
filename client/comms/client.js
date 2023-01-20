@@ -31,6 +31,10 @@ var Client = function (world_, scene_) {
     connection.send({updateName:name});
     connection.send({updateColor:color});
 
+    player.whenStuckInBlock(function(){
+      connection.send({stuckInBlock:true});
+    });
+
     conn.on("data", function(data){
       if(data.newPlayer){
         let npd = data.newPlayer;
