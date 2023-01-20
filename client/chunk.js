@@ -34,6 +34,9 @@ var Chunk = function (position_, blocks_, colors_) {
 
   this.setBlock = function(p, block){
     blocks[Math.floor(p.x)][Math.floor(p.y)][Math.floor(p.z)] = block;
+    // spawn locations may have changed...
+    validSpawnLocations = [];
+    needToFindSpawnLocations = true;
   }
 
   this.getRandomSpawnPosition = function(){
