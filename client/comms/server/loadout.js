@@ -102,8 +102,6 @@ var Loadout = function (type_) {
           worldState.projectiles.push(explosion);
 
           // destroy some blocks
-          worldState.world.setBlock(newp.getPosition(), 0);
-          worldState.updateChunks.push(worldState.world.chunkAt(newp.getPosition()));
           let p = newp.getPosition();
           for(let x = p.x-1; x <= p.x +1; x+=1){
             for(let y = p.y-1; y <= p.y +1; y+=1){
