@@ -25,7 +25,8 @@ var Client = function (id_, conn_) {
     new Loadout(Loadout.SNIPER),
     new Loadout(Loadout.SCATTER),
     new Loadout(Loadout.HEAVY),
-    new Loadout(Loadout.SEEKING)
+    new Loadout(Loadout.SEEKING),
+    new Loadout(Loadout.DRILL),
   ];
   this.loadout = this.unlockedLoadouts[0];
 

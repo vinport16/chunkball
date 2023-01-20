@@ -110,11 +110,7 @@ var Loadout = function (type_) {
                 // sometimes the edges of the 3x3 cube around the
                 // projectile are left unharmed
                 if(thisp.distanceTo(p)-1 < Math.random()*5){
-                  worldState.world.setBlock(thisp, 0);
-                  let chunk = worldState.world.chunkAt(thisp);
-                  if(chunk && !worldState.updateChunks.includes(chunk)){
-                    worldState.updateChunks.push(chunk);
-                  }
+                  worldState.breakBlockAt(thisp);
                 }
               }
             }
@@ -156,6 +152,45 @@ var Loadout = function (type_) {
         }
 
         newp.onDestroy = bounce;
+
+        worldState.projectiles.push(newp);
+      },
+    },
+    { 
+      name: 'drill',
+      launchSpeed: 19,
+      projectileRadius: 0.11,
+      reloadTime: 1500,
+      magazine: 30,
+      maxMagazine: 30,
+      launch: function(client, worldState){
+        let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
+        let newp = new Projectile(client.position.clone(), velocity, this.projectileRadius);
+        newp.setExpireTime(5000);
+        newp.owner = client;
+
+        let drillCount = 0;
+        let drillLimit = 7;
+        let drill = function(){
+          drillCount += 1;
+          if(drillCount > drillLimit){
+            return;
+          }
+          // destroy the block it hit (one small step forward in the direction it was moving)
+          let p = newp.getPosition().add(newp.getVelocity().normalize().multiplyScalar(0.01));
+          worldState.breakBlockAt(p);
+
+          // make another projectile moving in the same direction
+          let nextp = new Projectile(newp.getPosition(), newp.getVelocity().multiplyScalar(0.8), newp.getRadius());
+          nextp.setExpireTime(5000 - newp.getAge());
+          nextp.owner = client;
+          nextp.onDestroy = drill;
+          worldState.projectiles.push(nextp);
+
+          newp = nextp;
+        }
+
+        newp.onDestroy = drill;
 
         worldState.projectiles.push(newp);
       },
@@ -202,6 +237,7 @@ Loadout.HEAVY = 3;
 Loadout.SEEKING = 4;
 Loadout.BOMB = 5;
 Loadout.BOUNCE = 6;
+Loadout.DRILL = 7;
 
 Loadout.prototype.constructor = Loadout;
 
