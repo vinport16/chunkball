@@ -90,6 +90,7 @@ var Server = function (catalog_) {
     this.introduceNewPlayer(client);
     updateLeaderboard();
     respawn(client);
+    announceLoadout(client);
   }
 
   this.sendUpdates = function(){
@@ -360,6 +361,7 @@ var Server = function (catalog_) {
       client.assailants = [];
       client.victims = [];
       client.resetLoadouts();
+      announceLoadout(client);
       // todo: when client loadout status is stored on server,
       // reset their magazine etc
     });
