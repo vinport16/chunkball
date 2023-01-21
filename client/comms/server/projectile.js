@@ -5,8 +5,6 @@ var idcounter = 0;
 
 var Projectile = function (pos, vel, r) {
   const GRAVITY = 9.8;
-  // for seeking, in rad/sec
-  const CORRECTION_RATE = 1;
 
   var position = pos;
   var velocity = vel; // in blocks/sec
@@ -24,6 +22,8 @@ var Projectile = function (pos, vel, r) {
 
   // set to false or to an object with a position property (client)
   this.seeking = false;
+  // for seeking, in rad/sec
+  this.correction_rate = 1;
 
   this.onDestroy = function(){
     // default: do nothing
@@ -42,10 +42,10 @@ var Projectile = function (pos, vel, r) {
       let targetDirection = this.seeking.position.clone().sub(position).normalize();
       let angle = velocity.angleTo(targetDirection);
 
-      if(angle < (CORRECTION_RATE * 0.001 * deltaTime)){
+      if(angle < (this.correction_rate * 0.001 * deltaTime)){
         velocity = targetDirection.multiplyScalar(speed);
       }else{
-        velocity.lerp(targetDirection.multiplyScalar(speed), (CORRECTION_RATE * 0.001 * deltaTime)/angle );
+        velocity.lerp(targetDirection.multiplyScalar(speed), (this.correction_rate * 0.001 * deltaTime)/angle );
         velocity.normalize().multiplyScalar(speed);
       }
 

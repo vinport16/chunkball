@@ -23,7 +23,14 @@ var Server = function (catalog_) {
       if(chunk && !this.updateChunks.includes(chunk)){
         this.updateChunks.push(chunk);
       }
-    }
+    },
+    createBlockAt: function(p){
+      let chunk = this.world.chunkAt(p);
+      if(chunk && !this.updateChunks.includes(chunk)){
+        this.world.setBlock(p, 1);
+        this.updateChunks.push(chunk);
+      }
+    },
   }
 
   refreshMap();

@@ -20,6 +20,10 @@ var Client = function (id_, conn_) {
   //TODO: Remove the advanced loadouts when we have a way to earn the in-game
   this.unlockedLoadouts = [
     new Loadout(Loadout.SCOUT),
+    new Loadout(Loadout.BUILD),
+    new Loadout(Loadout.BRIDGE),
+    new Loadout(Loadout.BOOSTED_DART),
+    new Loadout(Loadout.FRACTURE),
     new Loadout(Loadout.BOUNCE),
     new Loadout(Loadout.BOMB),
     new Loadout(Loadout.SNIPER),

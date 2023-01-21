@@ -195,6 +195,146 @@ var Loadout = function (type_) {
         worldState.projectiles.push(newp);
       },
     },
+    { 
+      name: 'bridge',
+      launchSpeed: 18,
+      projectileRadius: 0.22,
+      reloadTime: 1500,
+      magazine: 30,
+      maxMagazine: 30,
+      launch: function(client, worldState){
+        let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
+        let newp = new Projectile(client.position.clone(), velocity, this.projectileRadius);
+        newp.setExpireTime(120);
+        newp.owner = client;
+
+        let count = 0;
+        let limit = 15;
+        let bridge = function(){
+          count += 1;
+          if(count > limit){
+            return;
+          }
+
+          // if it hit a block, do nothing
+          console.log(newp.getAge());
+          if(newp.getAge() < 40){
+            return;
+          }
+
+          // make another projectile moving in the same direction
+          let nextp = new Projectile(newp.getPosition(), newp.getVelocity(), newp.getRadius());
+          nextp.setExpireTime(40);
+          nextp.owner = client;
+          nextp.onDestroy = bridge;
+          worldState.projectiles.push(nextp);
+
+          newp = nextp;
+
+          // also make a projectile that stays still and makes a block
+          let builder = new Projectile(newp.getPosition(), new THREE.Vector3(0,1,0), newp.getRadius()*2);
+          builder.setExpireTime(50);
+          builder.owner = client;
+          builder.onDestroy = function(){
+            // make a block
+            worldState.createBlockAt(builder.getPosition());
+          };
+          worldState.projectiles.push(builder);
+
+        }
+
+        newp.onDestroy = bridge;
+
+        worldState.projectiles.push(newp);
+      },
+    },
+    { 
+      name: 'fracture',
+      launchSpeed: 35,
+      projectileRadius: 0.31,
+      reloadTime: 3000,
+      magazine: 100,
+      maxMagazine: 100,
+      launch: function(client, worldState){
+        let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
+        let newp = new Projectile(client.position.clone(), velocity, this.projectileRadius);
+        newp.owner = client;
+        newp.setExpireTime(2000);
+
+        let pieces = 10;
+        newp.onDestroy = function(){
+
+          for(let i = 0; i < pieces; i++){
+            let newv = bounceVelocity(newp, worldState.world).multiplyScalar(0.2).add(randomDirection().multiplyScalar(10));
+            let bp = new Projectile(newp.getPosition(), newv, newp.getRadius()/2);
+            bp.setExpireTime(1000);
+            bp.owner = client;
+            bp.setFriendlyFire(true);
+            bp.onDestroy = function(){
+              for(let i = 0; i < pieces; i++){
+                let newv = bounceVelocity(bp, worldState.world).multiplyScalar(0.5).add(randomDirection().multiplyScalar(5));
+                let nbp = new Projectile(bp.getPosition(), newv, bp.getRadius()/1.5);
+                nbp.setExpireTime(1000);
+                nbp.owner = client;
+                nbp.setFriendlyFire(true);
+                worldState.projectiles.push(nbp);
+              }
+            }
+            worldState.projectiles.push(bp);
+          }
+        }
+
+        worldState.projectiles.push(newp);
+      },
+    },
+    { 
+      name: 'boosted dart',
+      launchSpeed: 21,
+      projectileRadius: 0.16,
+      reloadTime: 2000,
+      magazine: 30,
+      maxMagazine: 30,
+      launch: function(client, worldState){
+        let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
+        let newp = new Projectile(client.position.clone(), velocity, this.projectileRadius);
+        newp.owner = client;
+        newp.setExpireTime(200);
+        newp.seeking = newp.nearestTarget(worldState.clients);
+        newp.correction_rate = 2;
+
+        newp.onDestroy = function(){
+          let nextp = new Projectile(newp.getPosition(), newp.getVelocity().multiplyScalar(5), newp.getRadius()/2);
+          nextp.setExpireTime(5000);
+          nextp.owner = client;
+          worldState.projectiles.push(nextp);
+        }
+
+        worldState.projectiles.push(newp);
+      }
+    },
+    { 
+      name: 'build',
+      launchSpeed: 60,
+      projectileRadius: 0.35,
+      reloadTime: 500,
+      magazine: 150,
+      maxMagazine: 150,
+      launch: function(client, worldState){
+        let velocity = client.direction.clone().normalize().multiplyScalar(this.launchSpeed);
+        let newp = new Projectile(client.position.clone(), velocity, this.projectileRadius);
+        newp.setExpireTime(200);
+        newp.owner = client;
+        
+        newp.onDestroy = function(){
+          let p = newp.getPosition();
+          if(newp.getAge() < 200){
+            worldState.createBlockAt(p);
+          }
+        }
+
+        worldState.projectiles.push(newp);
+      },
+    },
   ];
 
   // projectile just hit something. If it hit the world, reflect velocity
@@ -215,6 +355,10 @@ var Loadout = function (type_) {
     });
 
     return projectile.getVelocity().multiply(new THREE.Vector3(...direction));
+  }
+
+  function randomDirection(){
+    return new THREE.Vector3(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5).normalize();
   }
   
   var proto = types[type_];
@@ -238,6 +382,10 @@ Loadout.SEEKING = 4;
 Loadout.BOMB = 5;
 Loadout.BOUNCE = 6;
 Loadout.DRILL = 7;
+Loadout.BRIDGE = 8;
+Loadout.FRACTURE = 9;
+Loadout.BOOSTED_DART = 10;
+Loadout.BUILD = 11;
 
 Loadout.prototype.constructor = Loadout;
 
