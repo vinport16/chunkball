@@ -372,11 +372,12 @@ var Server = function (catalog_) {
   }
 
 
-  function resetAllClients(){
+  function resetAllClients(loadoutTypes){
     worldState.clients.forEach(function(client){
       client.assailants = [];
       client.victims = [];
-      client.resetLoadouts();
+      client.setLoadouts(loadoutTypes);
+      //client.resetLoadouts();
       announceLoadout(client);
       // todo: when client loadout status is stored on server,
       // reset their magazine etc
@@ -420,7 +421,7 @@ var Server = function (catalog_) {
 
   roundManager.setAnnounceFunc(announce);
   roundManager.onRoundStart(function(){
-    resetAllClients();
+    resetAllClients(mapCatalog.getCurrentLoadoutTypes());
     // redraw the world? switch to different world idk
     // TODO: interactive choose-next-map thing. maybe thru the chat?
     // ie, vote for 1. stay here, 2. specific other map, 3. random ?

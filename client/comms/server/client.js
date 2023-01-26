@@ -58,9 +58,9 @@ var Client = function (id_, conn_) {
 
   this.setLoadouts = function(loadouts){
     this.unlockedLoadouts = [];
-    for (var l in loadouts){
-      this.unlockedLoadouts.push(new Loadout(Loadout.l))
-    }
+    loadouts.forEach(loadoutType => this.unlockedLoadouts.push(new Loadout(loadoutType)));
+    this.loadoutIDX = 0;
+    this.loadout = this.unlockedLoadouts[this.loadoutIDX];
   }
 
   this.resetLoadouts = function(){

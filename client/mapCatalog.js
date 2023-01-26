@@ -82,6 +82,10 @@ var MapCatalog = function (maps) {
     return worlds[currentWorldIdx].duration;
   }
 
+  this.getCurrentLoadoutTypes = function(){
+    return worlds[currentWorldIdx].loadoutTypes;
+  }
+
 };
 
 

@@ -142,13 +142,12 @@ var Setup = function () {
     let loadouts = loadoutSelect();
     element.appendChild(loadouts);
 
-    // Create arr of loadouts to add to selected:
+    // Create inital array of loadouts for the selected object:
     var loadoutArr = [...Array(Object.keys(Loadout).length).keys()];
-    console.log(loadoutArr)
 
     // this unit has internal map select logic built in.
     
-    var selected = {file: false, address: ourMaps.value, name: Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText, duration: 300, loadouts: loadoutArr};
+    var selected = {file: false, address: ourMaps.value, name: Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText, duration: 300, loadoutTypes: loadoutArr};
 
     yourMap.addEventListener("change", function(){
       var file = yourMap.files[0];
@@ -179,10 +178,10 @@ var Setup = function () {
       if (child.type == "checkbox"){
         child.addEventListener("change", function(){
           if(this.checked){
-            selected.loadouts.push(Number(this.value))
+            selected.loadoutTypes.push(Number(this.value))
           }else{
-            const index = selected.loadouts.indexOf(Number(this.value));
-            selected.loadouts.splice(index, 1)
+            const index = selected.loadoutTypes.indexOf(Number(this.value));
+            selected.loadoutTypes.splice(index, 1)
           }
         })
       }
