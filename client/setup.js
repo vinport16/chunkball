@@ -95,18 +95,20 @@ var Setup = function () {
 
   function loadoutSelect(){
     let loadoutBoxes = document.createElement("div");
-    for (var prop in Loadout){
+    var typeId = 0;
+    for (var loadoutType in Loadout){
       let loadoutCb = document.createElement("input");
       loadoutCb.type = "checkbox";
-      loadoutCb.id = prop;
-      loadoutCb.value = prop;
+      loadoutCb.id = loadoutType;
+      loadoutCb.value = typeId;
       loadoutCb.checked = true;
       let loadoutLabel = document.createElement("label");
-      loadoutLabel.setAttribute("for", prop);
-      loadoutLabel.innerHTML = prop.toLowerCase();
+      loadoutLabel.setAttribute("for", loadoutType);
+      loadoutLabel.innerHTML = loadoutType.toLowerCase();
       loadoutBoxes.appendChild(loadoutCb);
       loadoutBoxes.appendChild(loadoutLabel);
       loadoutBoxes.appendChild(document.createElement("br"))
+      typeId++;
     }
     return loadoutBoxes;
   }
@@ -141,10 +143,8 @@ var Setup = function () {
     element.appendChild(loadouts);
 
     // Create arr of loadouts to add to selected:
-    var loadoutArr = [];
-    for (var prop in Loadout){
-      loadoutArr.push(prop)
-    }
+    var loadoutArr = [...Array(Object.keys(Loadout).length).keys()];
+    console.log(loadoutArr)
 
     // this unit has internal map select logic built in.
     
@@ -179,9 +179,9 @@ var Setup = function () {
       if (child.type == "checkbox"){
         child.addEventListener("change", function(){
           if(this.checked){
-            selected.loadouts.push(this.value)
+            selected.loadouts.push(Number(this.value))
           }else{
-            const index = selected.loadouts.indexOf(this.value);
+            const index = selected.loadouts.indexOf(Number(this.value));
             selected.loadouts.splice(index, 1)
           }
         })

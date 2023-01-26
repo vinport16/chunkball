@@ -56,6 +56,13 @@ var Client = function (id_, conn_) {
     this.unlockedLoadouts.push(new Loadout(type));
   }
 
+  this.setLoadouts = function(loadouts){
+    this.unlockedLoadouts = [];
+    for (var l in loadouts){
+      this.unlockedLoadouts.push(new Loadout(Loadout.l))
+    }
+  }
+
   this.resetLoadouts = function(){
     this.unlockedLoadouts.forEach(e => {
       e.magazine = e.maxMagazine;
