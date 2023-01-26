@@ -1,4 +1,5 @@
 import {MapCatalog} from './mapCatalog.js';
+import { Loadout } from './comms/server/loadout.js';
 
 /*
 Setup is instantiated before any connections are made or game is started. Performs
@@ -92,6 +93,24 @@ var Setup = function () {
     return duration;
   }
 
+  function loadoutSelect(){
+    let loadoutBoxes = document.createElement("div");
+    for (var prop in Loadout){
+      let loadoutCb = document.createElement("input");
+      loadoutCb.type = "checkbox";
+      loadoutCb.id = prop;
+      loadoutCb.value = prop;
+      loadoutCb.checked = true;
+      let loadoutLabel = document.createElement("label");
+      loadoutLabel.setAttribute("for", prop);
+      loadoutLabel.innerHTML = prop.toLowerCase();
+      loadoutBoxes.appendChild(loadoutCb);
+      loadoutBoxes.appendChild(loadoutLabel);
+      loadoutBoxes.appendChild(document.createElement("br"))
+    }
+    return loadoutBoxes;
+  }
+
   function mapSelectUnit(){
     let unit = {};
     let element = document.createElement("div");
@@ -118,9 +137,18 @@ var Setup = function () {
     element.appendChild(roundDuration);
     unit.element = element;
 
+    let loadouts = loadoutSelect();
+    element.appendChild(loadouts);
+
+    // Create arr of loadouts to add to selected:
+    var loadoutArr = [];
+    for (var prop in Loadout){
+      loadoutArr.push(prop)
+    }
+
     // this unit has internal map select logic built in.
     
-    var selected = {file: false, address: ourMaps.value, name: Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText, duration: 300};
+    var selected = {file: false, address: ourMaps.value, name: Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText, duration: 300, loadouts: loadoutArr};
 
     yourMap.addEventListener("change", function(){
       var file = yourMap.files[0];
@@ -144,6 +172,21 @@ var Setup = function () {
     roundDuration.addEventListener("change", function(){
       selected.duration = parseInt(roundDuration.value, 10);
     });
+
+    var divChildren = loadouts.childNodes;
+    for (var childIndex in divChildren){
+      var child = divChildren[childIndex];
+      if (child.type == "checkbox"){
+        child.addEventListener("change", function(){
+          if(this.checked){
+            selected.loadouts.push(this.value)
+          }else{
+            const index = selected.loadouts.indexOf(this.value);
+            selected.loadouts.splice(index, 1)
+          }
+        })
+      }
+    }
 
     unit.getSelected = function(){
       // return {file: file object or false, address: string or false, name: string}; TODO
