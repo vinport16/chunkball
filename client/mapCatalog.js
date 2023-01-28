@@ -12,7 +12,7 @@ var MapCatalog = function (maps) {
 
   var cycle = true;
   var worlds = maps;
-  var currentWorldIdx = maps.length-1;
+  var currentWorldIdx = 0;
   
   this.printWorldsList = function(){
     console.log(worlds);
@@ -22,15 +22,10 @@ var MapCatalog = function (maps) {
     cycle = setting;
   }
 
-  this.prepareNextWorld = function(world){
+  this.prepareCurrentWorld = function(world){
 
     return {
       then: function(callback){
-
-        currentWorldIdx++;
-        if(currentWorldIdx >= worlds.length){
-          currentWorldIdx = 0;
-        }
 
         // clear world
         world.fullRefresh();
@@ -72,6 +67,14 @@ var MapCatalog = function (maps) {
         }
       }
     }
+  }
+
+  this.prepareNextWorld = function(world){
+    currentWorldIdx++;
+    if(currentWorldIdx >= worlds.length){
+      currentWorldIdx = 0;
+    }
+    return this.prepareCurrentWorld(world);
   }
 
   this.getCurrentWorldName = function(){
