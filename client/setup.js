@@ -116,11 +116,19 @@ var Setup = function () {
   function mapSelectUnit(){
     let unit = {};
     let element = document.createElement("div");
+    let ourMapText = document.createElement("span");
+    ourMapText.innerHTML = "Select a map:   "
+    element.appendChild(ourMapText);
     element.classList.add("mapSelectUnit");
     let ourMaps = mapsSelect(mapAddresses);
     ourMaps.classList.add("selectedMapInput"); // we use this by default
     let yourMap = fileSelect();
     element.appendChild(ourMaps);
+    element.appendChild(document.createElement('br'));
+
+    let yourMapText = document.createElement("span");
+    yourMapText.innerHTML = "Or upload your own:"
+    element.appendChild(yourMapText);
     if(mapSelects.length != 0){
       // first map select can't be removed
       let remove = document.createElement("button");
@@ -134,10 +142,20 @@ var Setup = function () {
     }
     element.appendChild(document.createElement('br'));
     element.appendChild(yourMap);
+    element.appendChild(document.createElement('br'));
+
+    let durationText = document.createElement("span");
+    durationText.innerHTML = "Round Duration:   "
+    element.appendChild(durationText);
 
     let roundDuration = durationSelect();
     element.appendChild(roundDuration);
     unit.element = element;
+    element.appendChild(document.createElement('br'));
+
+    let loadoutText = document.createElement("span");
+    loadoutText.innerHTML = "Available Loadouts:"
+    element.appendChild(loadoutText);
 
     let loadouts = loadoutSelect();
     element.appendChild(loadouts);

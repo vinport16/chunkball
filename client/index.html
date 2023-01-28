@@ -31,30 +31,31 @@
     <div id="reload-bar"><div id="bar-container"><div id="status-bar"></div></div></div>
     <div id="snowballCount">20</div>
     <div id="blocker">
+    <div id="pausedScreen">
+      <div id="mapSelect" hidden>
+        <h3>Before playing, choose a map, duration, and loadouts available for each round.</h3>
 
-        <div id="pausedScreen">
-            <span id="instructions">
-                <br/><br/>
-                Move: WASD<br/>
-                Jump: SPACE<br/>
-                Look: MOUSE<br/>
-                Shoot: Left Click or E<br/>
-                Sprint: WW <br/>
-                Scope: SHIFT <br/>
-                Message: T <br/>
-                Change Loadout: X <br/>
-                <br/>
-                <br/>
-                <span style="font-size:36px">
-                    <button id="startButton">Play!</button>
-                </span>
-            </span>
-            <div id="mapSelect" hidden>
-                <button id="addMap">add another map</button><br/><br/>
-            </div>
-            
-        </div>
-
+        <button id="addMap">Add Another Round</button><br/><br/>
+      </div>
+      <span id="instructions">
+        <br/><br/>
+        Instructions
+        <br/><br/>
+        Move: WASD<br/>
+        Jump: SPACE<br/>
+        Look: MOUSE<br/>
+        Shoot: Left Click or E<br/>
+        Sprint: WW <br/>
+        Scope: SHIFT <br/>
+        Message: T <br/>
+        Change Loadout: X <br/>
+        <br/>
+        <br/>
+        <span style="font-size:36px">
+            <button id="startButton">Play!</button>
+        </span>
+      </span>
+    </div>
   </div>
   <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
   <script src="./three.min.js"></script>
