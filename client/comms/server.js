@@ -143,6 +143,18 @@ var Server = function (catalog_) {
   function refreshMap(){
     worldState.refreshing = true;
     worldState.updateChunks = [];
+    mapCatalog.prepareCurrentWorld(worldState.world).then(function(){
+      worldState.refreshing = false;
+      worldState.clients.forEach(function(client){
+        client.conn.send({clearWorld: true});
+        respawn(client);
+      });
+    });
+  }
+
+  function loadNextMap(){
+    worldState.refreshing = true;
+    worldState.updateChunks = [];
     mapCatalog.prepareNextWorld(worldState.world).then(function(){
       worldState.refreshing = false;
       worldState.clients.forEach(function(client){
@@ -390,6 +402,10 @@ var Server = function (catalog_) {
     });
   }
 
+  function removeAllProjectiles(){
+    worldState.projectiles = [];
+  }
+
   function andTheWinnerIs(){
     worldState.clients.sort(function(a,b){
       let ascore = (a.assailants.length)/((a.victims.length)+1);
@@ -426,6 +442,8 @@ var Server = function (catalog_) {
     // ie, vote for 1. stay here, 2. specific other map, 3. random ?
     // vote with command syntax: leading '/': "/1" votes to stay here
     respawnAllClients();
+    removeAllProjectiles();
+    refreshMap();
     roundManager.setRoundDuration(mapCatalog.getCurrentWorldDuration())
   });
   roundManager.onRoundEnd(function(){
@@ -435,7 +453,7 @@ var Server = function (catalog_) {
       winner.victims.length + " hits and " + winner.assailants.length + " deaths.");
     setWinnerTag(winner);
 
-    refreshMap();
+    loadNextMap();
     announce("The next round will be played in: "+mapCatalog.getCurrentWorldName());
   });
 
