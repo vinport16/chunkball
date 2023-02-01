@@ -1,4 +1,5 @@
 import {MapCatalog} from './mapCatalog.js';
+import { Loadout } from './comms/server/loadout.js';
 
 /*
 Setup is instantiated before any connections are made or game is started. Performs
@@ -92,14 +93,42 @@ var Setup = function () {
     return duration;
   }
 
+  function loadoutSelect(){
+    let loadoutBoxes = document.createElement("div");
+    var typeId = 0;
+    for (var loadoutType in Loadout){
+      let loadoutCb = document.createElement("input");
+      loadoutCb.type = "checkbox";
+      loadoutCb.id = loadoutType;
+      loadoutCb.value = typeId;
+      loadoutCb.checked = true;
+      let loadoutLabel = document.createElement("label");
+      loadoutLabel.setAttribute("for", loadoutType);
+      loadoutLabel.innerHTML = loadoutType.toLowerCase();
+      loadoutBoxes.appendChild(loadoutCb);
+      loadoutBoxes.appendChild(loadoutLabel);
+      loadoutBoxes.appendChild(document.createElement("br"))
+      typeId++;
+    }
+    return loadoutBoxes;
+  }
+
   function mapSelectUnit(){
     let unit = {};
     let element = document.createElement("div");
+    let ourMapText = document.createElement("span");
+    ourMapText.innerHTML = "Select a map:   "
+    element.appendChild(ourMapText);
     element.classList.add("mapSelectUnit");
     let ourMaps = mapsSelect(mapAddresses);
     ourMaps.classList.add("selectedMapInput"); // we use this by default
     let yourMap = fileSelect();
     element.appendChild(ourMaps);
+    element.appendChild(document.createElement('br'));
+
+    let yourMapText = document.createElement("span");
+    yourMapText.innerHTML = "Or upload your own:"
+    element.appendChild(yourMapText);
     if(mapSelects.length != 0){
       // first map select can't be removed
       let remove = document.createElement("button");
@@ -113,14 +142,30 @@ var Setup = function () {
     }
     element.appendChild(document.createElement('br'));
     element.appendChild(yourMap);
+    element.appendChild(document.createElement('br'));
+
+    let durationText = document.createElement("span");
+    durationText.innerHTML = "Round Duration:   "
+    element.appendChild(durationText);
 
     let roundDuration = durationSelect();
     element.appendChild(roundDuration);
     unit.element = element;
+    element.appendChild(document.createElement('br'));
+
+    let loadoutText = document.createElement("span");
+    loadoutText.innerHTML = "Available Loadouts:"
+    element.appendChild(loadoutText);
+
+    let loadouts = loadoutSelect();
+    element.appendChild(loadouts);
+
+    // Create inital array of loadouts for the selected object:
+    var loadoutArr = [...Array(Object.keys(Loadout).length).keys()];
 
     // this unit has internal map select logic built in.
     
-    var selected = {file: false, address: ourMaps.value, name: Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText, duration: 300};
+    var selected = {file: false, address: ourMaps.value, name: Array.from( ourMaps.children ).find( child => child.value == ourMaps.value ).innerText, duration: 300, loadoutTypes: loadoutArr};
 
     yourMap.addEventListener("change", function(){
       var file = yourMap.files[0];
@@ -144,6 +189,21 @@ var Setup = function () {
     roundDuration.addEventListener("change", function(){
       selected.duration = parseInt(roundDuration.value, 10);
     });
+
+    var divChildren = loadouts.childNodes;
+    for (var childIndex in divChildren){
+      var child = divChildren[childIndex];
+      if (child.type == "checkbox"){
+        child.addEventListener("change", function(){
+          if(this.checked){
+            selected.loadoutTypes.push(Number(this.value))
+          }else{
+            const index = selected.loadoutTypes.indexOf(Number(this.value));
+            selected.loadoutTypes.splice(index, 1)
+          }
+        })
+      }
+    }
 
     unit.getSelected = function(){
       // return {file: file object or false, address: string or false, name: string}; TODO

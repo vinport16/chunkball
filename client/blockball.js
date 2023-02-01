@@ -22,6 +22,13 @@ var client;
 var server;
 var world = new World(10, 6);
 
+//HTML elements:
+var blocker = document.getElementById('blocker');
+var instructionDisplay = document.getElementById('instructions');
+var leaderboardDisplay = document.getElementById('leaderboard');
+var startButton = document.getElementById('startButton');
+var mapSelectDisplay = document.getElementById('mapSelect')
+
 var player = new Player(new THREE.Vector3(4, 60, 4), world);
 player.init(scene, camera)
 
@@ -81,15 +88,17 @@ var startTime = Date.now();
 
 
 function setPlayUI() {
-  instructions.style.display = 'none';
-  //leaderboard.style.display = '';
   blocker.style.display = 'none';
+  instructionDisplay.style.display = 'none';
+  leaderboardDisplay.style.display = 'block';
+  mapSelectDisplay.style.display = 'none';
 }
 
 function setPauseUI() {
   blocker.style.display = 'block';
-  instructions.style.display = '';
-  //leaderboard.style.display = '';
+  instructionDisplay.style.display = '';
+  leaderboardDisplay.style.display = 'none';
+  mapSelectDisplay.style.display = 'block';
 }
 
 player.onControlsLock(setPlayUI);
@@ -112,11 +121,6 @@ function init() {
   // a.updatePosition(new THREE.Vector3(4.5, 4.5, 1.5), new THREE.Quaternion(0.01,0.01,1,0.01));
 
   add_crosshair(camera);
-
-  var blocker = document.getElementById('blocker');
-  var instructions = document.getElementById('instructions');
-  var leaderboard = document.getElementById('leaderboard');
-  var startButton = document.getElementById('startButton');
 
   startButton.addEventListener('click', function () {
     player.play();
