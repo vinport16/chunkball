@@ -25,7 +25,7 @@ body {
   z-index: 2;
   width: 30%;
   height: 40%;
-  display: box;
+  display: none;
   color: #ffffff;
   text-align: left;
   font-family: Arial;
