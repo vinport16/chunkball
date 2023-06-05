@@ -1,4 +1,3 @@
-import {PointerLockControls} from './pointerlock.js';
 import {World} from './world.js';
 import {Chunk} from './chunk.js';
 import {Player} from './player.js';
@@ -10,10 +9,13 @@ import {Channel} from './comms/channel.js';
 import {Chat} from './comms/chat.js'
 import {Leaderboard} from './comms/leaderboard.js'
 import {Setup} from './setup.js'
+import {KeyboardInput} from './keyboardInput.js'
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
+scene.add(camera);
 var renderer, controls;
 
+var keyboardInput = new KeyboardInput();
 var chat;
 var leaderboard;
 var setup = new Setup();
@@ -23,7 +25,7 @@ var server;
 var world = new World(10, 6);
 
 var player = new Player(new THREE.Vector3(4, 60, 4), world);
-player.init(scene, camera)
+player.init(camera, keyboardInput);
 
 setup.onReady(function () {
 
@@ -122,80 +124,6 @@ function init() {
     player.play();
     setPlayUI();
   }, false);
-
-  var onClick = function (event) {
-    client.launch();
-  }
-  var onKeyDown = function (event) {
-    switch (event.keyCode) {
-      case 16: // shift
-        player.zoom();
-        break;
-      case 38: // up
-      case 87: // w
-        var elapsedTime = ((Date.now() - startTime) / 1000).toFixed(3);
-        if (elapsedTime < 0.5) {
-          player.sprint = true;
-        }
-        player.moveForward = true;
-        break;
-      case 37: // left
-      case 65: // a
-        player.moveLeft = true;
-        break;
-      case 40: // down
-      case 83: // s
-        player.moveBackward = true;
-        break;
-      case 39: // right
-      case 68: // d
-        player.moveRight = true;
-        break;
-      case 32: // space
-        player.jump();
-        break;
-      case 69: // e
-        client.launch();
-        break;
-      case 88: //x, change class
-        client.changeLoadout();
-        break;
-      case 77: //m, change mode
-        // ? what mode ?
-        break;
-      case 84: //t, talk
-
-        break;
-    }
-  };
-  var onKeyUp = function (event) {
-    switch (event.keyCode) {
-      case 16: // shift
-        player.unzoom();
-      case 38: // up
-      case 87: // w
-        startTime = Date.now();
-        player.sprint = false;
-        player.moveForward = false;
-        break;
-      case 37: // left
-      case 65: // a
-        player.moveLeft = false;
-        break;
-      case 40: // down
-      case 83: // s
-        player.moveBackward = false;
-        break;
-      case 39: // right
-      case 68: // d
-        player.moveRight = false;
-        break;
-    }
-  };
-
-  document.addEventListener('keydown', onKeyDown, false);
-  document.addEventListener('keyup', onKeyUp, false);
-  document.addEventListener('click', onClick, false);
 
 
   var light = new THREE.DirectionalLight(0xffffff, 1);

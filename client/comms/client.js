@@ -109,6 +109,15 @@ var Client = function (world_, scene_) {
       }
     });
 
+
+    let client = this;
+    player.onLaunchDo(function(){
+      client.launch();
+    });
+    player.onChangeLoadoutDo(function(){
+      client.changeLoadout();
+    })
+
     // on connect, start sending updates to server:
 
     const timer = new Worker('./comms/timer.js');
@@ -143,7 +152,7 @@ var Client = function (world_, scene_) {
 
   this.launch = function(){
     if(!player){return} // if player isn't created yet
-    let angle = player.launch();
+    let angle = player.getLaunchAngle();
     if(angle){
       connection.send({launch: {angle: angle.toArray()}});
     }

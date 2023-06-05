@@ -1,26 +1,27 @@
-import {PointerLockControls} from './pointerlock.js';
-
 var Player = function (position_, world_) {
   
   var position = position_.clone();
   var world = world_;
 
-  this.moveForward = false;
-  this.moveBackward = false;
-  this.moveLeft = false;
-  this.moveRight = false;
   this.sprint = false;
+  
   var canJump = false;
   var velocity = new THREE.Vector3();
   var terminalVelocityY = -25;
   var direction = new THREE.Vector3();
   this.color = new THREE.Color();
   var playerJustFell = false;
+  var scopeSpeedFactor = 0.002;
+
+  var launchCallback = function(){};
+  var changeLoadoutCallback = function(){};
+  var onControlsLockFunc = function(){};
+  var onControlsUnlockFunc = function(){};
 
   var prevTime = performance.now();
 
   var camera = null;
-  var controls = null;
+  var input = null;
 
   var loadout = {
     name: "scout",
@@ -30,41 +31,81 @@ var Player = function (position_, world_) {
     maxMagazine:300,
   };
 
-  this.init = function(scene, camera_){
+  this.init = function(camera_, input_){
     camera = camera_;
-    controls = new PointerLockControls(camera);
-    controls.getObject().position.x = position.x;
-    controls.getObject().position.y = position.y;
-    controls.getObject().position.z = position.z;
-    scene.add(controls.getObject());
+    camera.position.x = position.x;
+    camera.position.y = position.y;
+    camera.position.z = position.z;
+    input = input_;
+    input.addListener(this);
+  }
+
+  this.notify = function(event, data){
+    switch (event) {
+      case 'zoomStart':
+        this.zoom();
+        break;
+      case 'zoomStop':
+        this.unzoom();
+        break;
+      case 'launch':
+        this.launch();
+        break;
+      case 'sprintStart':
+        this.sprint = true;
+        break;
+      case 'sprintStop':
+        this.sprint = false;
+        break;
+      case 'jump':
+        this.jump();
+        break;
+      case 'changeLoadout':
+        this.requestChangeLoadout();
+        break;
+      case 'pointerLocked':
+        onControlsLockFunc();
+        break;
+      case 'pointerUnlocked':
+        onControlsUnlockFunc();
+        break;
+    }
   }
 
   this.play = function(){
-    controls.lock();
+    input.lock();
   }
 
   this.pause = function(){
-    controls.unlock();
-  }
-
-  this.onControlsLock = function(f){
-    controls.addEventListener('lock', f);
-  }
-
-  this.onControlsUnlock = function(f){
-    controls.addEventListener('unlock', f);
+    input.unlock();
   }
 
   this.zoom = function(){
     camera.fov = 10;
-    controls.speedFactor = 0.0004;
+    scopeSpeedFactor = 0.0004;
     camera.updateProjectionMatrix();
   }
 
   this.unzoom = function(){
     camera.fov = 75;
-    controls.speedFactor = 0.002;
+    scopeSpeedFactor = 0.002;
     camera.updateProjectionMatrix();
+  }
+
+  this.onLaunchDo = function(func){
+    launchCallback = func;
+  }
+
+  this.launch = function(){
+    launchCallback();
+  }
+
+  this.onChangeLoadoutDo = function(func){
+    changeLoadoutCallback = func;
+  }
+
+  this.requestChangeLoadout = function(){
+    changeLoadoutCallback();
   }
 
   this.jump = function(){
@@ -80,12 +121,20 @@ var Player = function (position_, world_) {
   }
 
   this.isLocked = function(){
-    return controls.isLocked;
+    return input.pointerLocked;
   }
 
-  this.launch = function(){
+  this.onControlsLock = function(callback){
+    onControlsLockFunc = callback;
+  }
+
+  this.onControlsUnlock = function(callback){
+    onControlsUnlockFunc = callback;
+  }
+
+  this.getLaunchAngle = function(){
     // return launch angle
-    if(loadout.loadStatus >= loadout.reloadTime && controls.isLocked && loadout.magazine > 0) {
+    if(loadout.loadStatus >= loadout.reloadTime && input.pointerLocked && loadout.magazine > 0) {
       var vector = new THREE.Vector3(0, 0, -1);
       vector.applyQuaternion(camera.quaternion);
       
@@ -98,7 +147,7 @@ var Player = function (position_, world_) {
   }
 
   this.getPosition = function(){
-    return controls.getObject().position.clone();//.setY(controls.getObject().position.y - 0.75);
+    return camera.position.clone();//.setY(camera.position.y - 0.75);
   }
 
   this.getDirection = function(){
@@ -106,9 +155,9 @@ var Player = function (position_, world_) {
   }
 
   this.setPosition = function(p){
-    controls.getObject().position.setX(p.x);
-    controls.getObject().position.setY(p.y);
-    controls.getObject().position.setZ(p.z);
+    camera.position.setX(p.x);
+    camera.position.setY(p.y);
+    camera.position.setZ(p.z);
   }
 
   this.isPositionColliding = function(position){
@@ -233,53 +282,102 @@ var Player = function (position_, world_) {
     return fauxPosition;
   }
 
+  // define these once for use in swivelCamera
+  var PI_2 = Math.PI / 2
+  var euler = new THREE.Euler(0, 0, 0, 'YXZ');
+
+  this.swivelCamera = function(){
+    let turn = input.getLookUpdate();
+    euler.setFromQuaternion( camera.quaternion );
+    euler.y -= turn.x * scopeSpeedFactor;
+    euler.x -= turn.y * scopeSpeedFactor;
+    euler.x = Math.max( - PI_2, Math.min( PI_2, euler.x ) );
+    camera.quaternion.setFromEuler( euler );
+  }
+
+  this.moveForward = function(distance){
+    // move forward parallel to the xz-plane
+    let vec = new THREE.Vector3();
+    vec.setFromMatrixColumn(camera.matrix, 0);
+    vec.crossVectors(camera.up, vec);
+    camera.position.addScaledVector(vec, distance);
+  };
+
+  this.moveRight = function(distance){
+    let vec = new THREE.Vector3();
+    vec.setFromMatrixColumn(camera.matrix, 0);
+    camera.position.addScaledVector(vec, distance);
+  };
+
+  this.moveUp = function(distance){
+    camera.position.y += distance;
+  }
+
   this.animate = function() {
     var time = performance.now();
 
-    if (controls.isLocked === true) {
+    if (input.pointerLocked === true) {
 
-      var originalPosition = controls.getObject().position.clone();
+      var originalPosition = camera.position.clone();
 
-      let slightlyLower = controls.getObject().position.clone();
+      this.swivelCamera();
+
+      // DETERMINE IF PLAYER CAN JUMP
+      let slightlyLower = camera.position.clone();
       slightlyLower.y -= 0.01;
-      var onObject = this.isPositionColliding(slightlyLower);
-
-      var delta = (time - prevTime) / 1000;
-      velocity.x -= velocity.x * 4.0 * delta;
-      velocity.z -= velocity.z * 4.0 * delta;
-      velocity.y -= 9.8 * 2.0 * delta; // 100.0 = mass
-      if (velocity.y < terminalVelocityY) { // terminal velocity is negative
-        velocity.y = terminalVelocityY;
-      }
-      direction.z = Number(this.moveForward) - Number(this.moveBackward);
-      direction.x = Number(this.moveRight) - Number(this.moveLeft);
-      direction.normalize(); // this ensures consistent movements in all directions
-      if (this.sprint && (this.moveForward || this.moveBackward)) {
-        velocity.z -= direction.z * 30.0 * delta;
-      } else if (this.moveForward || this.moveBackward) {
-        velocity.z -= direction.z * 17.5 * delta;
-      }
-      if (this.moveLeft || this.moveRight) velocity.x -= direction.x * 17.5 * delta;
-      if (onObject === true) {
+      if (this.isPositionColliding(slightlyLower)) {
         velocity.y = Math.max(0, velocity.y);
         canJump = true;
       }
-      controls.moveRight(-velocity.x * delta);
-      controls.moveForward(-velocity.z * delta);
-      controls.getObject().position.y += (velocity.y * delta); // new behavior
 
-      let newPosition = controls.getObject().position;
+      var delta = (time - prevTime) / 1000;
+
+      // UPDATE VELOCITY (INERTIA)
+      velocity.x -= velocity.x * 4.0 * delta;
+      velocity.z -= velocity.z * 4.0 * delta;
+      velocity.y -= 9.8 * 2.0 * delta;
+      if(velocity.length() < 0.1){
+        velocity.set(0,0,0);
+      }
+      if (velocity.y < terminalVelocityY) { // terminal velocity is negative
+        velocity.y = terminalVelocityY;
+      }
+
+      // CONVERT INPUTS TO DIRECTION VECTOR
+      let inputs = input.getMovementUpdate();
+      direction.z = inputs.y;
+      direction.x = inputs.x;
+      direction.normalize(); // this ensures consistent movements in all directions
+
+      // DETERMINE SPEED
+      if (this.sprint) {
+        velocity.z -= direction.z * 30.0 * delta;
+      } else if (direction.length() > 0.1) {
+        velocity.z -= direction.z * 17.5 * delta;
+      }
+      if (this.moveLeft || this.moveRight) velocity.x -= direction.x * 17.5 * delta;
+
+      this.moveRight(-velocity.x * delta);
+      this.moveForward(-velocity.z * delta);
+      this.moveUp(velocity.y * delta);
+
+      // TODO
+      //controls.moveRight(-velocity.x * delta);
+      //controls.moveForward(-velocity.z * delta);
+      //controls.getObject().position.y += (velocity.y * delta);
+
+      let newPosition = camera.position;
       let move = newPosition.sub(originalPosition);
 
       let newPos = this.nextPosition(originalPosition, move);
-      controls.getObject().position.x = newPos.x;
-      controls.getObject().position.y = newPos.y;
-      controls.getObject().position.z = newPos.z;
+      camera.position.x = newPos.x;
+      camera.position.y = newPos.y;
+      camera.position.z = newPos.z;
 
       if (this.isPositionColliding(originalPosition)) {
-        controls.getObject().position.x = originalPosition.x;
-        controls.getObject().position.y = originalPosition.y; // THIS STOPS JUMPING THROUGH CEILINGS
-        controls.getObject().position.z = originalPosition.z;
+        camera.position.x = originalPosition.x;
+        camera.position.y = originalPosition.y;
+        camera.position.z = originalPosition.z;
       }
 
       // what was the actual delta in position? this is the actual velocity
@@ -290,10 +388,6 @@ var Player = function (position_, world_) {
     } else {
       velocity.set(0, 0, 0);
       this.sprint = false;
-      this.moveForward = false;
-      this.moveBackward = false;
-      this.moveLeft = false;
-      this.moveRight = false;
     }
 
     loadout.loadStatus += time-prevTime;
