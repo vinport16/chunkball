@@ -10,12 +10,15 @@ import {Chat} from './comms/chat.js'
 import {Leaderboard} from './comms/leaderboard.js'
 import {Setup} from './setup.js'
 import {KeyboardInput} from './keyboardInput.js'
+import {ControllerInput} from './controllerInput.js'
+
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 150);
 scene.add(camera);
 var renderer, controls;
 
 var keyboardInput = new KeyboardInput();
+var controllerInput = new ControllerInput(0);
 var chat;
 var leaderboard;
 var setup = new Setup();

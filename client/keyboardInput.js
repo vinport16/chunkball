@@ -17,11 +17,6 @@ var KeyboardInput = function () {
   var moveRight = false;
   var moveLeft = false;
 
-  this.jumping = false;
-  this.sprinting = false;
-  this.zoom = false;
-  this.launch = false;
-  this.changeLoadout = false;
   this.pointerLocked = false;
 
   var listeners = [];
